@@ -210,3 +210,20 @@ El mando no guarda nada en el navegador. La URL lleva `&densidad=sobria` para vo
 - **Trato de usted.**
 - **Lo taurino es un módulo tipográfico** que se puede quitar. Solo dice lo comprobado: su tradición y que la Feria del Toro de marzo abre la temporada.
 - **Olivenza:** solo datos comprobados y sin distancias. No se citan la esfera armilar ni el cordón de la portada del Ayuntamiento porque no están verificados.
+
+## Página de reunión
+
+`reunion.html` es una página para enseñar en la reunión con el hotel, en el móvil o en una pantalla: capturas de su web y de la nueva a 390×844 y 1440, una tabla de cifras medidas y tres «lo que gana» con su prueba. Tiene `noindex` y **no se enlaza desde ninguna página**.
+
+- **Rehacer capturas y cifras:** `node medir-reunion.mjs` (unos 5 minutos, usa la red). Sirve el repositorio en el puerto **8745**, mide, escribe `datos/reunion.json`, guarda las capturas en `img/reunion/` y pinta los datos en `reunion.src.html` (entre las marcas `<!--[x]-->`) para que `reunion.html` funcione abriéndolo sin servidor.
+- **Solo repintar la página** con el JSON que ya hay: `node medir-reunion.mjs --pagina`.
+- **Se edita `reunion.src.html`**, como el resto. Lo que va entre las marcas lo reescribe el script.
+- Lo que no se puede medir pone «no medido» (hoy, el HTTPS de la nueva: está en local).
+- **No viaja a la web publicada.** Antes de publicar hay que borrarla (receta siguiente).
+
+### Receta de borrado
+
+1. Borra `reunion.src.html`, `reunion.html`, `css/reunion.css`, `img/reunion/`, `datos/reunion.json` y `medir-reunion.mjs`.
+2. Quita la carpeta `datos/` si queda vacía.
+3. Elimina esta sección del README.
+4. Ejecuta `node construir.mjs`.

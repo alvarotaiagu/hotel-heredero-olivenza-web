@@ -1,0 +1,136 @@
+{
+  "fecha": "2026-10-13",
+  "entorno": "Chromium de Playwright en Windows; red real, y 4G lento emulado solo en el LCP",
+  "resultados": {
+    "https": {
+      "suWeb": {
+        "ok": false,
+        "detalle": "La conexión HTTPS se corta (ECONNRESET); ni ignorando el certificado responde."
+      }
+    },
+    "responsive": {
+      "suWeb": {
+        "movil": {
+          "viewport": "width=device-width, initial-scale=1",
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "desborda": false
+        },
+        "escritorio": {
+          "viewport": "width=auto",
+          "innerWidth": 390,
+          "scrollWidth": 1140,
+          "desborda": true
+        }
+      },
+      "nueva": {
+        "movil": {
+          "viewport": "width=device-width, initial-scale=1, viewport-fit=cover",
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "desborda": false
+        },
+        "escritorio": {
+          "viewport": "width=device-width, initial-scale=1, viewport-fit=cover",
+          "innerWidth": 390,
+          "scrollWidth": 390,
+          "desborda": false
+        }
+      }
+    },
+    "lcp": {
+      "suWeb": {
+        "pasadas": [
+          4152,
+          4256,
+          6812
+        ],
+        "mediana": 4256,
+        "elemento": "p"
+      },
+      "nueva": {
+        "pasadas": [
+          2172,
+          2116,
+          2232
+        ],
+        "mediana": 2172,
+        "elemento": "img (fachada-panoramica-1920.avif)"
+      }
+    },
+    "peso": {
+      "suWeb": {
+        "bytes": 771030,
+        "peticiones": 39
+      },
+      "nueva": {
+        "bytes": 480141,
+        "peticiones": 20
+      }
+    },
+    "reserva": {
+      "suWeb": {
+        "movil": {
+          "sinZoom": true,
+          "texto": "La página mide 390 px en una pantalla de 390; texto mínimo de los campos de formulario 16,0 px en pantalla; botón de 54 px de alto.",
+          "medidas": {
+            "campos": 4,
+            "fuenteMin": 16.0446,
+            "botonAlto": 54,
+            "innerWidth": 390,
+            "scrollWidth": 390
+          }
+        },
+        "escritorio": {
+          "sinZoom": false,
+          "texto": "La página mide 1140 px en una pantalla de 390; texto mínimo de los campos de formulario 13,0 px en pantalla; botón de 40 px de alto.",
+          "medidas": {
+            "campos": 5,
+            "fuenteMin": 13,
+            "botonAlto": 40,
+            "innerWidth": 390,
+            "scrollWidth": 1140
+          }
+        }
+      },
+      "nueva": {
+        "movil": {
+          "sinZoom": false,
+          "texto": "La página mide 390 px en una pantalla de 390; texto mínimo de los campos de formulario 11,5 px en pantalla; botón de 48 px de alto.",
+          "medidas": {
+            "campos": 6,
+            "fuenteMin": 11.52,
+            "botonAlto": 48,
+            "innerWidth": 390,
+            "scrollWidth": 390
+          }
+        }
+      }
+    }
+  },
+  "pruebas": {
+    "reserva": {
+      "elegidas": "12/11/2026 → 14/11/2026 (se rellenan en el formulario con los selectores de fecha)",
+      "url": "https://heredero-olivenza-dot-hoteles-heredero.appspot.com/booking1",
+      "metodo": "POST, pestaña nueva",
+      "startDate": "12/11/2026",
+      "endDate": "14/11/2026",
+      "numRooms": "1",
+      "adultsRoom1": "2",
+      "namespace": "heredero-olivenza",
+      "abre": "Una pestaña nueva con el motor (en esta prueba se intercepta el envío; el 2026-10-13 se comprobó sin interceptar que Paraty abre el paso 1 con esas fechas)."
+    },
+    "salones": {
+      "entrada": "Boda, junio de 2027, 120 invitados, nombre y teléfono",
+      "para": "info@hotelheredero.net",
+      "asunto": "Celebración: Boda · junio de 2027",
+      "cuerpo": "Hola, querría información para una celebración en el Hotel Heredero.\n\nQué celebramos: Boda\nFecha aproximada: junio de 2027\nInvitados: 120\nNombre: Prueba de reunión\nTeléfono: 600000000"
+    }
+  },
+  "capturas": {
+    "actual-movil": "img/reunion/actual-movil.jpg",
+    "nueva-movil": "img/reunion/nueva-movil.jpg",
+    "actual-escritorio": "img/reunion/actual-escritorio.jpg",
+    "nueva-escritorio": "img/reunion/nueva-escritorio.jpg"
+  }
+}
