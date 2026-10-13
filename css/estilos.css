@@ -321,8 +321,8 @@ html.con-movimiento [data-partir].es-partido:not(.es-visto) .pal > i { transform
 /* ============ reserva ============ */
 .reserva { background: var(--azul); color: var(--cal); padding: 36px 0 30px; position: relative; z-index: 3; }
 .reserva__tit { font-size: clamp(1.5rem, 2.6vw, 2rem); margin-bottom: 18px; }
-.reserva__form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: end; }
-.campo { display: flex; flex-direction: column; gap: 6px; }
+.reserva__form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: end; }
+.campo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .campo label, .ocupa legend, .ocupa label {
   font: 600 .72rem/1.2 var(--fuente); letter-spacing: .14em; text-transform: uppercase;
 }
@@ -336,11 +336,11 @@ html.con-movimiento [data-partir].es-partido:not(.es-visto) .pal > i { transform
   background: var(--azul-2); color: var(--cal); border-color: var(--linea-azul); color-scheme: dark;
 }
 .campo--corto { grid-column: span 2; }
-.ocupa { border: 0; grid-column: span 2; display: grid; grid-template-columns: auto 1fr 1fr; gap: 10px; align-items: end; }
+.ocupa { border: 0; grid-column: span 2; display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr); gap: 10px; align-items: end; min-width: 0; }
 .ocupa[hidden] { display: none; }
 .ocupa legend { float: left; padding-bottom: 14px; }
 .reserva__form:not(.es-varias) .ocupa legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-.reserva__form:not(.es-varias) .ocupa { grid-template-columns: 1fr 1fr; }
+.reserva__form:not(.es-varias) .ocupa { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .ocupa label { display: flex; flex-direction: column; gap: 6px; }
 /* el select vive dentro de la etiqueta (.72rem en mayúsculas): sin esto medía
    11,5 px y iOS hacía zoom al tocarlo. Ningún campo baja de 16 px. */
@@ -428,7 +428,7 @@ html.densidad-sobria .arco-foto__pie { margin-top: 12px; }
 
 /* ============ mesa ============ */
 .mesa { background: var(--cal); }
-.mesa__env { display: grid; gap: 34px; }
+.mesa__env { display: grid; grid-template-columns: minmax(0, 1fr); gap: 34px; }
 .mesa__txt h2 { margin: .35em 0 .5em; }
 .mesa__txt p { color: var(--tinta-2); margin-bottom: 12px; max-width: 52ch; }
 .mesa__foto { margin: 0; }
@@ -438,7 +438,7 @@ html.densidad-sobria .arco-foto__pie { margin-top: 12px; }
 .mesa__foto--arco { width: min(62%, 300px); justify-self: end; margin-top: -90px; position: relative; }
 .mesa__foto--arco .arco { aspect-ratio: .76; box-shadow: 0 0 0 8px var(--cal); }
 @media (min-width: 900px) {
-  .mesa__env { grid-template-columns: 1fr 1.25fr; grid-template-rows: auto auto; gap: 0 5vw; }
+  .mesa__env { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); grid-template-rows: auto auto; gap: 0 5vw; }
   .mesa__txt { grid-row: 1 / span 2; align-self: center; }
   .mesa__foto--ancha { grid-column: 2; }
   .mesa__foto--arco { grid-column: 2; margin-top: -150px; margin-right: -2vw; width: 46%; }

@@ -933,6 +933,42 @@ console.log('\n12. Profundidad del portal');
   }
 }
 
+/* ================= 7 bis. nada se sale por la derecha en móvil =================
+   html lleva overflow-x:clip, así que scrollWidth miente: se mide el borde derecho de
+   cada elemento visible (salvo los que viven dentro de un carril con scroll propio). */
+console.log('\n7 bis. Sin desbordes por la derecha (móvil)');
+for (const [pagina, anchos] of [['index.html', [320, 360, 390, 430]], ['reunion.html', [360, 390]]]) {
+  for (const w of anchos) {
+    const { ctx, page } = await nueva({ viewport: { width: w, height: 800 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+    await page.addInitScript(sinCookies);
+    await page.goto(BASE + pagina);
+    await esperarCortina(page, 300).catch(() => {});
+    const alto = await page.evaluate(() => document.documentElement.scrollHeight);
+    for (let y = 0; y < alto; y += 600) { await page.mouse.wheel(0, 600); await page.waitForTimeout(90); }
+    await page.waitForTimeout(600);
+    const fuera = await page.evaluate((ancho) => {
+      const r = [];
+      for (const e of document.body.querySelectorAll('*')) {
+        if (e.closest('svg') && e.tagName !== 'svg') continue;
+        const cs = getComputedStyle(e);
+        if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+        const b = e.getBoundingClientRect();
+        if (!b.width || !b.height || b.right <= ancho + 1) continue;
+        let p = e.parentElement, enCarril = false;
+        while (p && p !== document.body) {
+          const o = getComputedStyle(p).overflowX;
+          if (['auto', 'scroll', 'hidden', 'clip'].includes(o) && p.getBoundingClientRect().right <= ancho + 1) { enCarril = true; break; }
+          p = p.parentElement;
+        }
+        if (!enCarril) r.push(e.tagName.toLowerCase() + (e.className && typeof e.className === 'string' ? '.' + e.className.trim().split(/\s+/)[0] : '') + ' ' + Math.round(b.right));
+      }
+      return r.slice(0, 6);
+    }, w);
+    comprobar(fuera.length === 0, `${pagina} a ${w} px: ningún elemento pasa del borde derecho`, fuera);
+    await ctx.close();
+  }
+}
+
 /* ================= 8. recetas de borrado (sobre copias en memoria) ================= */
 console.log('\n8. Recetas de borrado');
 {
