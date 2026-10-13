@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Hotel Heredero · Modo reunión</title>
+<meta name="theme-color" content="#132638">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Albert+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<link rel="stylesheet" href="css/estilos.css?v=5862e376">
+<link rel="stylesheet" href="css/reunion.css?v=94002c51">
+<link rel="icon" href="marca/favicon.svg" type="image/svg+xml">
+</head>
+<body class="reunion">
+<!-- Página interna para enseñar en la reunión. NO se enlaza desde la web ni viaja a la publicada. -->
+<header class="r-cab">
+  <div class="env">
+    <p class="eti eti--oro">Solo para la reunión · no publicada</p>
+    <h1>Hotel Heredero: la web de hoy y la propuesta</h1>
+    <p class="r-lead">Capturas reales y cifras medidas con las dos webs delante. Lo que no se ha podido medir pone «no medido».</p>
+  </div>
+</header>
+
+<main>
+  <section class="r-sec" aria-labelledby="antes-tit">
+    <div class="env">
+      <p class="eti">1 · Antes y después</p>
+      <h2 id="antes-tit">En el móvil, lado a lado</h2>
+      <div class="r-moviles">
+        <figure class="r-fig">
+          <div class="r-movil"><img src="img/reunion/actual-movil.jpg" width="780" height="1688" alt="Portada actual de hotelheredero.net en un móvil de 390 píxeles de ancho" loading="lazy"></div>
+          <figcaption><strong>Su web hoy</strong>hotelheredero.net, con el aviso de cookies ya cerrado.</figcaption>
+        </figure>
+        <figure class="r-fig">
+          <div class="r-movil"><img src="img/reunion/nueva-movil.jpg" width="780" height="1688" alt="Portada de la web nueva en un móvil de 390 píxeles de ancho" loading="lazy"></div>
+          <figcaption><strong>La propuesta</strong>Tras la cortina y con el aviso de cookies cerrado.</figcaption>
+        </figure>
+      </div>
+      <h3 class="r-sub">En una pantalla de 1440 píxeles</h3>
+      <div class="r-escritorios">
+        <figure class="r-fig">
+          <div class="r-navegador"><img src="img/reunion/actual-escritorio.jpg" width="1440" height="900" alt="Portada actual de hotelheredero.net en una pantalla de escritorio de 1440 píxeles" loading="lazy"></div>
+          <figcaption><strong>Su web hoy</strong></figcaption>
+        </figure>
+        <figure class="r-fig">
+          <div class="r-navegador"><img src="img/reunion/nueva-escritorio.jpg" width="1440" height="900" alt="Portada de la web nueva en una pantalla de escritorio de 1440 píxeles" loading="lazy"></div>
+          <figcaption><strong>La propuesta</strong></figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="r-sec r-sec--cal2" aria-labelledby="cifras-tit">
+    <div class="env">
+      <p class="eti">2 · Cifras medidas</p>
+      <h2 id="cifras-tit">Su web y la nueva, con la misma vara</h2>
+      <p class="r-nota">Medido el <!--[meta]-->
+2026-10-13 · Chromium de Playwright en Windows; red real, y 4G lento emulado solo en el LCP
+<!--[/meta]-->. Con navegador de móvil, su web sirve una versión móvil aparte y esa sí se ve bien: se muestran las dos mediciones para no contar nada a medias.</p>
+      <div class="r-tabla-env">
+        <table class="r-tabla">
+          <thead><tr><th scope="col"><span class="oculto-visual">Medida</span></th><th scope="col">Su web</th><th scope="col">La nueva</th></tr></thead>
+          <tbody>
+          <!--[tabla]-->
+<tr><th scope="row">¿HTTPS?<small>Prueba: petición a https://www.hotelheredero.net con verificación de certificado.</small></th><td>No. La conexión HTTPS se corta (ECONNRESET); ni ignorando el certificado responde.</td><td>No medido: la propuesta está en local (http://localhost). El HTTPS llega con el dominio y el alojamiento, y todavía no existen.</td></tr>
+          <tr><th scope="row">¿Responsive?<small>Prueba: meta viewport y scrollWidth frente a innerWidth, a 390 px, con el agente de usuario de un Pixel 7 y con el de escritorio.</small></th><td><strong>Con navegador de móvil:</strong> sí, sirven una versión móvil aparte (viewport «width=device-width, initial-scale=1», sin desbordar a 390 px).<br><strong>Con navegador de escritorio a 390 px</strong> (ventana estrecha, tableta): no. Viewport «width=auto» y la página mide 1140 px de ancho en 390: desborda 750 px.</td><td>Sí, una sola web para todo. Viewport «width=device-width, initial-scale=1, viewport-fit=cover», sin desbordar a 390 px ni con navegador de móvil ni de escritorio.</td></tr>
+          <tr><th scope="row">LCP en móvil con 4G lento<small>Prueba: Pixel 7 emulado, 1,6 Mbps y 150 ms, CPU ×4, caché vacía, PerformanceObserver; mediana de 3 pasadas. La nueva se sirve desde un servidor local con gzip y con los CDN reales.</small></th><td><strong>4,26 s</strong><br><small>4,15 s / 4,26 s / 6,81 s · elemento: p</small></td><td><strong>2,17 s</strong><br><small>2,17 s / 2,12 s / 2,23 s · elemento: img (fachada-panoramica-1920.avif)</small></td></tr>
+          <tr><th scope="row">Peso de la portada y peticiones<small>Prueba: bytes transferidos (Network.loadingFinished, con cabeceras) tras cargar la portada en móvil, sin bajar por la página ni aceptar cookies. La nueva, con servidor local con gzip; hospedada, dependerá de que el servidor comprima.</small></th><td><strong>753 KB</strong> · 39 peticiones</td><td><strong>469 KB</strong> · 20 peticiones</td></tr>
+          <tr><th scope="row">¿Reserva en el móvil sin zoom?<small>Criterio: ancho de página igual al de pantalla, texto de los campos de 16 px o más (por debajo, iOS hace zoom solo) y botón de 44 px o más de alto.</small></th><td><strong>Con navegador de móvil:</strong> sí. La página mide 390 px en una pantalla de 390; texto mínimo de los campos de formulario 16,0 px en pantalla; botón de 54 px de alto.<br><strong>Con navegador de escritorio a 390 px:</strong> no. La página mide 1140 px en una pantalla de 390; texto mínimo de los campos de formulario 13,0 px en pantalla; botón de 40 px de alto.</td><td><strong>No.</strong> La página mide 390 px en una pantalla de 390; texto mínimo de los campos de formulario 11,5 px en pantalla; botón de 48 px de alto.</td></tr>
+<!--[/tabla]-->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="r-sec" aria-labelledby="gana-tit">
+    <div class="env">
+      <p class="eti">3 · Lo que gana el hotel</p>
+      <h2 id="gana-tit">Tres cosas, cada una con su prueba</h2>
+      <div class="r-ganas">
+        <article class="r-gana">
+          <h3><span>1</span> Reserva directa, con las fechas ya puestas</h3>
+          <p>El formulario envía al mismo motor de Paraty que ya usa el hotel, con entrada, salida y ocupación rellenas.</p>
+          <!--[reserva]-->
+<dl class="prueba">
+          <div><dt>Entrada y salida elegidas</dt><dd>12/11/2026 → 14/11/2026 (se rellenan en el formulario con los selectores de fecha)</dd></div>
+          <div><dt>Dónde se envía</dt><dd><code>https://heredero-olivenza-dot-hoteles-heredero.appspot.com/booking1</code> (POST, pestaña nueva)</dd></div>
+          <div><dt>Campos que viajan</dt><dd><code>startDate=12/11/2026</code> · <code>endDate=14/11/2026</code> · <code>numRooms=1</code> · <code>adultsRoom1=2</code> · <code>namespace=heredero-olivenza</code></dd></div>
+          <div><dt>Se abre</dt><dd>Una pestaña nueva con el motor (en esta prueba se intercepta el envío; el 2026-10-13 se comprobó sin interceptar que Paraty abre el paso 1 con esas fechas).</dd></div>
+        </dl>
+<!--[/reserva]-->
+        </article>
+        <article class="r-gana">
+          <h3><span>2</span> Salones: la petición de presupuesto sale redactada</h3>
+          <p>El formulario «Cuéntenos su celebración» abre el correo del cliente con el mensaje listo para <code>info@hotelheredero.net</code>. El hotel recibe el tipo de celebración, la fecha y los invitados sin pedirlos después.</p>
+          <!--[salones]-->
+<dl class="prueba">
+          <div><dt>Formulario rellenado</dt><dd>Boda, junio de 2027, 120 invitados, nombre y teléfono</dd></div>
+          <div><dt>Destino</dt><dd><code>info@hotelheredero.net</code></dd></div>
+          <div><dt>Asunto</dt><dd>Celebración: Boda · junio de 2027</dd></div>
+          <div><dt>Cuerpo del correo</dt><dd><pre>Hola, querría información para una celebración en el Hotel Heredero.
+
+Qué celebramos: Boda
+Fecha aproximada: junio de 2027
+Invitados: 120
+Nombre: Prueba de reunión
+Teléfono: 600000000</pre></dd></div>
+        </dl>
+<!--[/salones]-->
+        </article>
+        <article class="r-gana">
+          <h3><span>3</span> Una web segura y rápida en el móvil</h3>
+          <p>La misma web en el móvil y en el escritorio, sin desbordes y con la portada ligera. Las cifras de arriba son las pruebas.</p>
+          <!--[rapida]-->
+<dl class="prueba">
+          <div><dt>Rapidez en el móvil</dt><dd>LCP 2,17 s frente a 4,26 s (4G lento, CPU ×4, mediana de 3).</dd></div>
+          <div><dt>Móvil y escritorio</dt><dd>Una sola web, sin desbordar a 390 px con ninguno de los dos navegadores. La actual solo se adapta si detecta un móvil.</dd></div>
+          <div><dt>Segura</dt><dd>Hoy: La conexión HTTPS se corta (ECONNRESET); ni ignorando el certificado responde. En la propuesta, el HTTPS depende del dominio: <strong>no medido todavía</strong>.</dd></div>
+        </dl>
+<!--[/rapida]-->
+        </article>
+      </div>
+    </div>
+  </section>
+</main>
+<footer class="r-pie"><div class="env"><p>Página de trabajo: <code>reunion.html</code> se genera con <code>node medir-reunion.mjs</code>. No está enlazada desde la web.</p></div></footer>
+</body>
+</html>
