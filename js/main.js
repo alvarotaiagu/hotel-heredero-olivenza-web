@@ -26,7 +26,8 @@
 
   // el resize de la barra del móvil (mismo ancho, poca altura) no rehace NADA
   let anchoVista = innerWidth, altoVista = innerHeight;
-  const esBarra = () => innerWidth === anchoVista && Math.abs(innerHeight - altoVista) < 160;
+  // (solo en táctil: en escritorio, estirar la ventana en alto sí tiene que rehacer el pin)
+  const esBarra = () => !fino && innerWidth === anchoVista && Math.abs(innerHeight - altoVista) < 160;
 
   /* ============ 1. titulares partidos en palabras ============ */
   function partir(h) {
@@ -88,14 +89,63 @@
   };
 
   /* ============ 3. arcos: el marco del logo como recorte ============ */
+  // El recorte va en la variable --arco (no en style.clipPath) para que la
+  // apertura en arco (3b) pueda pasar por encima con sus propias clases.
   const recortar = (el) => {
     const w = el.clientWidth, h = el.clientHeight;
     if (!w || !h) return;
-    el.style.clipPath = Cordon.recortePortal(w, h);
+    el.style.setProperty('--arco', Cordon.recortePortal(w, h));
     el.classList.add('es-recortado');
   };
   const roArcos = new ResizeObserver((es) => es.forEach((e) => recortar(e.target)));
   $$('[data-arco]').forEach((el) => { recortar(el); roArcos.observe(el); });
+
+  /* ============ 3b. aperturas en arco ============
+     Fotos y secciones de color entran por una puerta con la forma del portal
+     que crece desde abajo. Una transición CSS de clip-path entre dos path()
+     con los mismos comandos (el navegador interpola cada número); la clase la
+     pone un IntersectionObserver. Nada de GSAP sobre clip-path. Sin GSAP o con
+     movimiento reducido no hay «con-movimiento» y todo está ya a la vista. */
+  const REVELA = '.arco:not(.portal__ventana), .salones__gran, .mesa__foto--ancha, .historia, .taurino';
+  // la puerta P(x,y,w,h) escalada s veces desde el punto (ox,oy)
+  const puerta = (x, y, w, h, ox, oy, s) => `path('${Cordon.portal(ox + (x - ox) * s, oy + (y - oy) * s, w * s, h * s, true)}')`;
+  function abrir(el) {
+    const w = el.clientWidth, h = el.clientHeight;
+    if (el.hasAttribute('data-arco')) {
+      // la foto ya va en arco: la puerta es su propio recorte, que crece desde el pie
+      el.style.setProperty('--revela-0', puerta(0, 0, w, h, w / 2, h, 0.02));
+    } else {
+      // rectángulo: una puerta más ancha que la caja, cuyos hombros quedan por
+      // encima de las esquinas, crece desde el borde de abajo de lo que se ve
+      const pw = w * 1.7, x = (w - pw) / 2, y = -pw * 0.12, ph = Math.max(h - y, pw * 0.5) + 2;
+      const vista = innerHeight - el.getBoundingClientRect().top;     // solo se lee al abrirse
+      const oy = Math.max(Math.min(h, vista - 8), Math.min(h, 40));
+      el.style.setProperty('--revela-0', puerta(x, y, pw, ph, w / 2, oy, 0.02));
+      el.style.setProperty('--revela-1', puerta(x, y, pw, ph, w / 2, oy, 1));
+    }
+    getComputedStyle(el).clipPath;                 // fija el punto de partida antes de la transición
+    el.classList.add('es-abriendo', 'es-abierto');
+    let hecho = false;
+    const fin = (e) => {
+      if (hecho || (e && (e.target !== el || e.propertyName !== 'clip-path'))) return;
+      hecho = true;
+      el.removeEventListener('transitionend', fin);
+      // de vuelta al estado de reposo: la foto con su arco, la sección sin recorte
+      el.classList.remove('revela', 'es-abriendo', 'es-abierto');
+      el.style.removeProperty('--revela-0');
+      el.style.removeProperty('--revela-1');
+    };
+    el.addEventListener('transitionend', fin);
+    setTimeout(fin, 2200);                         // por si la transición no llega a correr
+  }
+  if (motion) {
+    const ioRevela = new IntersectionObserver((es) => es.forEach((e) => {
+      if (!e.isIntersecting) return;
+      ioRevela.unobserve(e.target);
+      abrir(e.target);
+    }), { rootMargin: '0px 0px -12% 0px' });
+    $$(REVELA).forEach((el) => { el.classList.add('revela'); ioRevela.observe(el); });
+  }
 
   /* ============ 4. cordones de cada sección ============ */
   const rel = (el, base) => {
@@ -184,11 +234,14 @@
       const k = p.w / 920;
       const x = p.x + 21.5 * k - m, y = p.y + 9.1 * k - m, w = 875 * k + 2 * m, h = (1087.5 - 9.1) * k + 2 * m;
       let d = `M${f(x + w * .5)},${f(y + h)} L${f(x)},${f(y + h)}` + Cordon.portal(x, y, w, h).replace(/^M[^L]+/, '');
-      // de la esquina inferior derecha del portal, al botón y el nudo
+      // de la esquina inferior derecha del portal, al botón y el nudo. El nudo
+      // es un segundo tramo (se dibuja después del primero) para que pueda
+      // apretarse solo él al pulsar «Reservar» (§ 14).
       const sx = x + w, sy = y + h;
-      if (ancho()) d += ` C${f(sx + 60)},${f(sy + 30)} ${f(b.x - 80)},${f(b.y + b.h * 2.4)} ${f(b.x - 30)},${f(b.y + b.h + 10)}` + nudo(b, 10, b.x - 30, b.y + b.h + 10);
-      else d += ` C${f(sx + 10)},${f(sy + 40)} ${f(b.x + b.w + 30)},${f(b.y - 40)} ${f(b.x + b.w + 20)},${f(b.y + b.h + 4)}` + nudo(b, 9, b.x + b.w + 20, b.y + b.h + 4);
-      return { d, grosor: ancho() ? 7 : 6 };
+      const [ax, ay, mg] = ancho() ? [b.x - 30, b.y + b.h + 10, 10] : [b.x + b.w + 20, b.y + b.h + 4, 9];
+      if (ancho()) d += ` C${f(sx + 60)},${f(sy + 30)} ${f(b.x - 80)},${f(b.y + b.h * 2.4)} ${f(ax)},${f(ay)}`;
+      else d += ` C${f(sx + 10)},${f(sy + 40)} ${f(b.x + b.w + 30)},${f(b.y - 40)} ${f(ax)},${f(ay)}`;
+      return { d: [d, `M${f(ax)},${f(ay)}` + nudo(b, mg, ax, ay)], grosor: ancho() ? 7 : 6 };
     },
   };
 
@@ -199,17 +252,24 @@
     if (!L.w || !L.h) return;
     const def = CONSTRUCTORES[tipo](svg, L);
     const prev = tipo in deseado ? deseado[tipo] : (motion ? 0 : 1);
+    // varios trazados = tramos seguidos de un mismo cordón: cada uno se dibuja
+    // en su parte del progreso, en proporción a su longitud
     const ds = Array.isArray(def.d) ? def.d : [def.d];
-    const apis = ds.map((d) => Cordon.crear(svg, d, { grosor: def.grosor, progreso: prev }));
+    const apis = ds.map((d) => Cordon.crear(svg, d, { grosor: def.grosor, progreso: 0 }));
+    const total = apis.reduce((s, a) => s + a.longitud, 0) || 1;
+    let acum = 0;
+    apis.forEach((a) => { a.desde = acum / total; a.peso = a.longitud / total || 1; acum += a.longitud; });
     cordones[tipo] = { svg, apis, valor: prev, w: L.w, h: L.h };
+    pintarCordon(cordones[tipo], prev);
   }
+  const pintarCordon = (c, p) => c.apis.forEach((a) => a.progreso((p - a.desde) / a.peso));
   const deseado = {};                // progreso pedido, aunque el cordón aún no esté construido
   const progreso = (tipo, p) => {
     deseado[tipo] = p;
     const c = cordones[tipo];
     if (!c) return;
     c.valor = p;
-    c.apis.forEach((a) => a.progreso(p));
+    pintarCordon(c, p);
   };
   const svgsCordon = $$('svg[data-cordon]');
   // rehacer solo si cambia la caja de verdad (el resize de la barra no la cambia;
@@ -247,16 +307,18 @@
   /* ============ 5. cortina: el portal se dibuja y se abre ============ */
   const cortina = $('#cortina');
   let heroEntrado = false;
+  let ensenarGesto = null;           // lo pone el portal (§ 6): el gesto se enseña solo
   function entradaHero() {
     if (heroEntrado) return;
     heroEntrado = true;
+    if (ensenarGesto) ensenarGesto();
     const h1 = $('.hero__tit');
     if (motion) {
       partir(h1);
       requestAnimationFrame(() => requestAnimationFrame(() => h1.classList.add('es-visto')));
       const o = { v: deseado.portal || 0 };
       gsap.to(o, { v: 1, duration: 1.7, ease: 'power2.inOut', delay: 0.15, onUpdate: () => progreso('portal', o.v) });
-      gsap.from(['.hero .eti', '.hero__entra', '.hero__acc', '.portal__estrellas'], { opacity: 0.02, y: 18, duration: 0.9, ease: 'power3.out', stagger: 0.08, delay: 0.25, immediateRender: true });
+      gsap.from(['.hero .eti', '.hero__entra', '.hero__acc', '.hero__coord', '.portal__estrellas'], { opacity: 0.02, y: 18, duration: 0.9, ease: 'power3.out', stagger: 0.08, delay: 0.25, immediateRender: true });
     } else {
       progreso('portal', 1);
     }
@@ -337,8 +399,11 @@
   } else if (cortina) {
     cortina.hidden = true;
     raiz.classList.add('cortina-fuera');
+    // sin cortina que animar, el scroll ya manda desde el principio (como al retirarla)
+    if (hayGSAP) gsap.ticker.lagSmoothing(0);
     entradaHero();
   } else {
+    if (hayGSAP) gsap.ticker.lagSmoothing(0);
     entradaHero();
   }
 
@@ -350,7 +415,7 @@
     if (!ventana || !pista) return;
     const RATIO = 1920 / 650;           // las tres panorámicas tienen la misma proporción
     const FOCO = 0.3;                   // la puerta giratoria de la fachada
-    let x = 0, min = 0, vw = 0, arr = null, vel = 0, inercia = 0;
+    let x = 0, min = 0, vw = 0, arr = null, vel = 0, inercia = 0, ensenado = false;
 
     const medir = () => {
       const h = ventana.clientHeight;
@@ -365,7 +430,8 @@
     const pintar = () => { pista.style.transform = `translate3d(${f(x)}px,0,0)`; };
     new ResizeObserver(medir).observe(ventana);
 
-    const ocultarPista = () => pistaTxt && pistaTxt.classList.add('es-oculta');
+    // el primer arrastre (o las flechas) esconde la pista: ya sabe mirar, no hace falta enseñárselo
+    const ocultarPista = () => { ensenado = true; if (pistaTxt) pistaTxt.classList.add('es-oculta'); };
     ventana.addEventListener('dragstart', (e) => e.preventDefault());
     ventana.addEventListener('pointerdown', (e) => {
       if (e.button !== 0) return;
@@ -438,6 +504,50 @@
     }
     ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach((ev) => addEventListener(ev, tocado, { passive: true }));
     tocado();
+
+    /* el gesto se enseña solo: la primera vez en la sesión que entra el hero, la
+       vista se desliza 60 px y vuelve con inercia (misma pintar() que el dedo).
+       Se guarda en sessionStorage, que se borra al cerrar la pestaña. */
+    const LLAVE_GESTO = 'heredero-gesto';
+    function deslizar() {
+      if (arr || ensenado) return;                 // si ya lo está tocando, no hace falta
+      ensenado = true;
+      try { sessionStorage.setItem(LLAVE_GESTO, '1'); } catch (e) {}
+      cancelAnimationFrame(inercia);
+      const x0 = x, dir = x0 - 60 >= min ? -1 : 1;
+      const t0 = performance.now(), IDA = 560;
+      let v = 0;
+      const ida = (t) => {
+        const p = Math.min(1, (t - t0) / IDA);
+        x = x0 + dir * 60 * (1 - Math.pow(1 - p, 3));
+        pintar();
+        inercia = requestAnimationFrame(p < 1 ? ida : vuelta);
+      };
+      // vuelta como la del dedo al soltar: un muelle amortiguado, con un pelo de rebote
+      const vuelta = () => {
+        v = (v + (x0 - x) * 0.05) * 0.78;
+        x += v;
+        pintar();
+        if (Math.abs(x - x0) > 0.3 || Math.abs(v) > 0.05) inercia = requestAnimationFrame(vuelta);
+        else { x = x0; pintar(); }
+      };
+      inercia = requestAnimationFrame(ida);
+    }
+    function ensenar() {
+      if (quieto || ensenado) return;
+      try { if (sessionStorage.getItem(LLAVE_GESTO)) return; } catch (e) {}
+      // cuando el cordón ya rodea la foto y el portal está a la vista
+      setTimeout(() => {
+        const io = new IntersectionObserver((es) => {
+          if (!es[0].isIntersecting) return;
+          io.disconnect();
+          deslizar();
+        }, { threshold: 0.6 });
+        io.observe(ventana);
+      }, 1900);
+    }
+    ensenarGesto = ensenar;
+    if (heroEntrado) ensenar();
     window.__portal = { siguiente, estado: () => ({ x, min, actual }) };
   })();
 
@@ -461,11 +571,16 @@
     });
     sal.addEventListener('change', () => { aviso.textContent = ''; });
     const ocupas = $$('.ocupa', form);
-    habs.addEventListener('change', () => {
+    const sincronizarHabs = () => {
       const n = +habs.value;
       ocupas.forEach((o) => { const on = +o.dataset.hab <= n; o.hidden = !on; o.disabled = !on; });
       form.classList.toggle('es-varias', n > 1);
-    });
+    };
+    habs.addEventListener('change', sincronizarHabs);
+    // al recargar (o volver atrás) el navegador recuerda «2 habitaciones»:
+    // los fieldset tienen que seguirle, o la 2 y la 3 se quedan ocultas y fuera del envío
+    sincronizarHabs();
+    addEventListener('pageshow', sincronizarHabs);
     // dd/mm/aaaa, que es lo que lee el motor (jQuery UI 'dd/mm/yy')
     const dmy = (d) => String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
     form.addEventListener('submit', (e) => {
@@ -595,7 +710,10 @@
       if (Math.abs(dx) > 5) { movido = true; c.classList.add('es-arrastrando'); }
       if (movido) c.scrollLeft = a.s - dx;
     });
-    addEventListener('pointerup', () => { a = null; setTimeout(() => c.classList.remove('es-arrastrando'), 0); });
+    // el clic que sigue al arrastre ya se ha despachado cuando corre el setTimeout:
+    // si el arrastre acabó fuera del carril (sin clic), «movido» no se queda colgado
+    // y no se come el siguiente clic o Intro
+    addEventListener('pointerup', () => { a = null; setTimeout(() => { c.classList.remove('es-arrastrando'); movido = false; }, 0); });
     // si arrastró, el clic no abre el visor
     c.addEventListener('click', (e) => { if (movido) { e.preventDefault(); e.stopPropagation(); movido = false; } }, true);
   })();
@@ -708,9 +826,17 @@
   if (raiz.classList.contains('densidad-sobria')) montarGaleria();
 
   /* ============ 14. cabecera, menú y anclas ============ */
+  // .sc = ha bajado (fondo y logo compacto); .es-azul = está sobre «Desde 1985» o el pie
   const cab = $('#cab');
-  const alScroll = () => cab.classList.toggle('sc', scrollY > 24);
-  addEventListener('scroll', alScroll, { passive: true });
+  const azules = $$('.historia, .pie');
+  let pendienteCab = 0;
+  const alScroll = () => {
+    pendienteCab = 0;
+    cab.classList.toggle('sc', scrollY > 24);
+    const y = cab.offsetHeight / 2;
+    cab.classList.toggle('es-azul', azules.some((s) => { const r = s.getBoundingClientRect(); return r.top <= y && r.bottom > y; }));
+  };
+  addEventListener('scroll', () => { if (!pendienteCab) pendienteCab = requestAnimationFrame(alScroll); }, { passive: true });
   alScroll();
 
   const btnMenu = $('#menu-btn'), menu = $('#menu-movil');
@@ -726,6 +852,23 @@
     menu.setAttribute('aria-hidden', String(!abierto));
     if (lenis) abierto ? lenis.stop() : lenis.start();
   });
+  /* el nudo se aprieta: al pulsar «Reservar» del pie, el lazo da un tirón breve
+     (escala .96 y vuelta, 250 ms) antes de ir a la reserva. Solo el tramo del
+     nudo, desde el centro del botón; el arco alrededor del logo no se mueve. */
+  const TIRON = 250;
+  function apretarNudo() {
+    const btn = $('#pie-btn');
+    const c = cordones.nudo;
+    const claves = [{ transform: 'scale(1)' }, { transform: 'scale(.96)', offset: 0.4 }, { transform: 'scale(1)' }];
+    const op = { duration: TIRON, easing: 'cubic-bezier(.4, 0, .3, 1)' };
+    btn.animate(claves, op);
+    if (c && c.apis.length > 1) {
+      const lazo = c.apis[c.apis.length - 1].grupo;
+      const b = rel(btn, c.svg);
+      lazo.style.transformOrigin = `${f(b.x + b.w / 2)}px ${f(b.y + b.h / 2)}px`;
+      lazo.animate(claves, op);
+    }
+  }
   $$('a[href^="#"]').forEach((a) => {
     const destino = a.getAttribute('href');
     if (destino.length < 2) return;
@@ -733,8 +876,17 @@
       if (!$(destino)) return;
       e.preventDefault();
       cerrarMenu();
-      irA(destino);
-      if (destino === '#reservar') setTimeout(() => $('#r-entrada').focus({ preventScroll: true }), 900);
+      const ir = () => {
+        irA(destino);
+        // el foco viaja con el scroll (como en un ancla normal): el siguiente Tab sigue desde allí
+        setTimeout(() => {
+          if (destino === '#reservar') { $('#r-entrada').focus({ preventScroll: true }); return; }
+          const t = $(destino);
+          if (!t.hasAttribute('tabindex')) t.setAttribute('tabindex', '-1');
+          t.focus({ preventScroll: true });
+        }, 900);
+      };
+      if (a.id === 'pie-btn' && motion) { apretarNudo(); setTimeout(ir, TIRON); } else ir();
     });
   });
   addEventListener('keydown', (e) => {
@@ -771,6 +923,33 @@
   $('#ck-no').addEventListener('click', () => cerrarCk('no'));
   $('#abrir-cookies').addEventListener('click', (e) => { e.preventDefault(); ck.hidden = false; verMando(); });
   if (!cortina || cortina.hidden) mostrarCookies();
+
+  /* ============ 15b. barra de reserva en el móvil ============
+     Fija abajo, solo por debajo de 1000 px. Sale al dejar el hero y se esconde
+     sobre la reserva, en el pie, con el menú abierto y con el aviso de cookies.
+     Todo con observadores: ningún resize (ni el de la barra del navegador)
+     rehace nada aquí. */
+  (function barraMovil() {
+    const barra = $('#barra-res');
+    if (!barra) return;
+    const movil = matchMedia('(max-width: 999px)');
+    const dentro = { hero: true, reservar: false, pie: false };
+    const pintar = () => {
+      const ver = movil.matches && !dentro.hero && !dentro.reservar && !dentro.pie
+        && !document.body.classList.contains('menu') && ck.hidden;
+      barra.classList.toggle('es-visible', ver);
+      barra.setAttribute('aria-hidden', String(!ver));
+      raiz.classList.toggle('con-barra', ver);     // el mando de ?revision sube por encima
+    };
+    const io = new IntersectionObserver((es) => { es.forEach((e) => { dentro[e.target.dataset.barra] = e.isIntersecting; }); pintar(); });
+    [['hero', '.hero'], ['reservar', '#reservar'], ['pie', '#pie']].forEach(([k, s]) => { const el = $(s); if (el) { el.dataset.barra = k; io.observe(el); } });
+    // el menú (clase del body) y el aviso de cookies (atributo hidden)
+    const mo = new MutationObserver(pintar);
+    mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    mo.observe(ck, { attributes: true, attributeFilter: ['hidden'] });
+    movil.addEventListener('change', pintar);
+    pintar();
+  })();
 
   /* ============ 16. MANDO DE MAQUETA (no viaja al cliente) ============ */
   if (mando && raiz.classList.contains('revision')) {

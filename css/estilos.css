@@ -27,6 +27,10 @@
   --fuente-t: Gloock, 'Times New Roman', serif;
   --fuente: 'Albert Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --ease: cubic-bezier(.2, .7, .2, 1);
+  --barra: 68px;             /* alto de la barra de reserva del móvil */
+  /* Grano de papel: una tesela de feTurbulence que el navegador rasteriza UNA vez
+     y repite (nada de canvas ni filtros por fotograma). Muy tenue: alfa ≈ 3 %. */
+  --grano: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .14 0 0 0 0 .08 .2 0 0 0 -.065'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23g)'/%3E%3C/svg%3E");
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -36,7 +40,7 @@ html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 .lenis.lenis-stopped { overflow: hidden; }
 body {
-  background: var(--papel);
+  background: var(--papel) var(--grano);
   color: var(--tinta);
   font: 400 17px/1.6 var(--fuente);
   overflow-x: clip;
@@ -73,6 +77,8 @@ strong { font-weight: 600; }
   border-radius: 999px 999px 3px 3px / 16px 16px 3px 3px;
 }
 .historia, .taurino, .pie, .reserva, .visor, .cortina { --foco: var(--oro-claro); }
+/* las secciones reciben el foco al llegar por un ancla: sin aro alrededor de toda la sección */
+section[tabindex="-1"]:focus { outline: none; }
 
 .eti {
   font: 600 .76rem/1.3 var(--fuente);
@@ -80,7 +86,14 @@ strong { font-weight: 600; }
   color: var(--ocre-txt);
 }
 .eti--oro { color: var(--oro-sobre-azul); }
-
+/* rótulo de lámina: «N.º 01 · Habitaciones». Contador de CSS: si se quita el
+   módulo taurino o la galería está oculta, la numeración sigue seguida. */
+main { counter-reset: lamina; }
+.eti[data-lamina]::before {
+  counter-increment: lamina;
+  content: "N.º " counter(lamina, decimal-leading-zero) "\2002·\2002";
+  font-variant-numeric: tabular-nums;
+}
 /* ---------- botones ---------- */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: .6em;
@@ -99,17 +112,31 @@ strong { font-weight: 600; }
 .btn--cal:hover { background: #fff; }
 .btn--oro { background: var(--oro-claro); color: var(--tinta); }
 .btn--oro:hover { background: var(--cal); }
+.btn--linea-cal { border-color: var(--cal); color: var(--cal); }
+.btn--linea-cal:hover { background: var(--cal); color: var(--tinta); }
 
 /* ---------- arco: el marco del logo como recorte (JS pone el path exacto) ---------- */
 .arco { display: block; position: relative; overflow: hidden; border-radius: 50% 50% 0 0 / 26% 26% 0 0; }
-.arco.es-recortado { border-radius: 0; }
+.arco.es-recortado { border-radius: 0; clip-path: var(--arco); }
 .arco img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ---------- aperturas en arco (main.js § 3b) ----------
+   Cerrada: --revela-0 (la puerta diminuta al pie). Abierta: --revela-1 (o el
+   propio arco de la foto). La transición solo existe mientras se abre; al
+   acabar, el JS quita las clases y queda el recorte de reposo. */
+html.con-movimiento .revela { clip-path: var(--revela-0, inset(100% 0 0 0)); }
+html.con-movimiento .revela.es-abierto { clip-path: var(--revela-1, var(--arco, none)); }
+.revela.es-abriendo { transition: clip-path 1.15s cubic-bezier(.3, .65, .15, 1); }
+.historia.revela.es-abriendo, .taurino.revela.es-abriendo { transition-duration: 1.4s; }
 
 /* ---------- cordón ---------- */
 .cordon { position: absolute; pointer-events: none; overflow: visible; }
 .cordon__alma { stroke: #7A5A22; }
 .cordon__cabo-a { fill: var(--oro); stroke: #5E4418; }
 .cordon__cabo-b { fill: var(--oro-claro); stroke: #5E4418; }
+/* volumen sin filtros: sombra = el cuerpo desplazado; luz = óvalos estrechos en el lomo */
+.cordon__sombra { stroke: rgba(30, 18, 6, .3); }
+.cordon__luz { fill: #F7E8BE; fill-opacity: .82; }
 
 /* ============ cortina ============ */
 .cortina {
@@ -141,8 +168,17 @@ html:not(.js) .cortina { display: none; }
 .cab {
   position: fixed; top: 0; left: 0; right: 0; z-index: 50;
   height: var(--cab);
-  transition: background-color .4s, box-shadow .4s;
+  transition: background-color .4s, box-shadow .4s, color .4s;
 }
+/* sobre «Desde 1985» y el pie: azul con texto cal (con el menú abierto, no) */
+body:not(.menu) .cab.es-azul {
+  background: rgba(19, 38, 56, .94); color: var(--cal);
+  box-shadow: 0 1px 0 var(--linea-azul); --foco: var(--oro-claro);
+}
+body:not(.menu) .cab.es-azul .cab__nombre i { color: var(--cal-tenue); }
+body:not(.menu) .cab.es-azul .cab__compacto { color: var(--cal); }
+body:not(.menu) .cab.es-azul .cab__reservar { background: var(--cal); color: var(--tinta); }
+body:not(.menu) .cab.es-azul .menu-btn span:not(.oculto-visual) { background: var(--cal); }
 .cab.sc {
   background: rgba(251, 247, 238, .9);
   -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
@@ -154,7 +190,13 @@ html:not(.js) .cortina { display: none; }
 }
 @media (min-width: 760px) { .cab__env { padding: 0 40px; } }
 .cab__marca { display: flex; align-items: center; gap: 12px; text-decoration: none; margin-right: auto; }
-.cab__logo { width: 40px; height: auto; }
+/* logo: entero arriba; al bajar, el compacto (mismo marco y mismo HH, sin los
+   rótulos que a 34 px no se leen), encima trazo a trazo y un poco más pequeño */
+.cab__logos { position: relative; display: block; width: 40px; flex: none; }
+.cab__logo, .cab__compacto { width: 40px; height: auto; transform-origin: 0 50%; transition: opacity .35s, transform .45s var(--ease), color .4s; }
+.cab__compacto { position: absolute; left: 0; top: 0; color: var(--tinta); opacity: 0; }
+.cab.sc .cab__logo, .cab.es-azul .cab__logo { opacity: 0; transform: scale(.85); }
+.cab.sc .cab__compacto, .cab.es-azul .cab__compacto { opacity: 1; transform: scale(.85); }
 .cab__nombre { font: 400 1.15rem/1.05 var(--fuente-t); display: flex; flex-direction: column; }
 .cab__nombre i { font: 600 .62rem/1.4 var(--fuente); font-style: normal; letter-spacing: .18em; text-transform: uppercase; color: var(--tinta-2); }
 .nav { display: none; gap: 28px; }
@@ -200,6 +242,13 @@ body.menu .menu-movil { transform: none; visibility: visible; transition: transf
 .hero__tit { font-size: clamp(2.4rem, 9.6vw, 5.6rem); line-height: 1.02; margin: .3em 0 .35em; max-width: 13ch; }
 .hero__entra { font-size: 1.05rem; color: var(--tinta-2); max-width: 36ch; }
 .hero__acc { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+/* coordenadas del hotel (nodo de OpenStreetMap), como el pie de una lámina */
+.hero__coord {
+  margin-top: 26px; display: flex; align-items: center; gap: 12px;
+  font: 600 .7rem/1.3 var(--fuente); letter-spacing: .18em; text-transform: uppercase;
+  color: var(--tinta-2); font-variant-numeric: tabular-nums;
+}
+.hero__coord::before { content: ''; width: 28px; height: 1px; background: currentColor; flex: none; }
 
 .portal { position: relative; margin: 6px 4px 8px; order: -1; }   /* en móvil, el portal primero */
 .portal__ventana {
@@ -277,6 +326,9 @@ html.con-movimiento [data-partir].es-partido:not(.es-visto) .pal > i { transform
 .reserva__form:not(.es-varias) .ocupa legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 .reserva__form:not(.es-varias) .ocupa { grid-template-columns: 1fr 1fr; }
 .ocupa label { display: flex; flex-direction: column; gap: 6px; }
+/* el select vive dentro de la etiqueta (.72rem en mayúsculas): sin esto medía
+   11,5 px y iOS hacía zoom al tocarlo. Ningún campo baja de 16 px. */
+.ocupa select { font-size: 1rem; letter-spacing: 0; text-transform: none; }
 .reserva__ir { grid-column: span 2; }
 .reserva__aviso { grid-column: 1 / -1; min-height: 1.2em; color: var(--oro-sobre-azul); font-weight: 600; }
 .reserva__aviso:empty { display: none; }
@@ -486,19 +538,42 @@ html:not(.densidad-sobria) .galeria { display: none; }
 /* ============ cookies ============ */
 .cookies { position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 120; background: var(--papel); border: 1px solid var(--linea); box-shadow: 0 20px 40px -20px rgba(35, 30, 32, .35); padding: 18px; gap: 14px; flex-direction: column; max-width: 560px; }
 .cookies:not([hidden]) { display: flex; }
+
+/* ============ barra de reserva del móvil (main.js § 15b) ============ */
+.barra-res {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+  display: grid; grid-template-columns: 1.3fr 1fr; gap: 10px;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  background: rgba(19, 38, 56, .97); --foco: var(--oro-claro);
+  box-shadow: 0 -12px 30px -20px rgba(0, 0, 0, .6);
+  transform: translateY(105%); visibility: hidden;
+  transition: transform .45s var(--ease), visibility 0s .45s;
+}
+.barra-res.es-visible { transform: none; visibility: visible; transition: transform .45s var(--ease); }
+@media (min-width: 1000px) { .barra-res { display: none; } }
 .cookies p { font-size: .92rem; }
 .cookies__acc { display: flex; gap: 10px; flex-wrap: wrap; }
 
 /* ============ MANDO DE MAQUETA (no viaja al cliente) ============ */
+/* con la barra de reserva a la vista, el mando sube por encima de ella */
+html.con-barra .mando { bottom: calc(var(--barra) + 12px + env(safe-area-inset-bottom)); }
+.mando { transition: bottom .45s var(--ease); }
 .mando { position: fixed; left: 16px; bottom: 16px; z-index: 110; display: flex; align-items: center; gap: 4px; background: var(--tinta); color: var(--cal); padding: 6px; font: 600 .72rem/1 var(--fuente); letter-spacing: .1em; text-transform: uppercase; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, .5); }
 .mando[hidden] { display: none; }
 .mando__eti { padding: 0 8px; color: var(--cal-tenue); }
 .mando button { min-height: 36px; padding: 0 12px; color: var(--cal); }
 .mando button[aria-pressed="true"] { background: var(--cal); color: var(--tinta); }
 
+/* ---------- grano de papel sobre el papel y la cal (nunca sobre el azul ni la tinta) ----------
+   Va aquí, después de las secciones: su «background» abreviado lo pisaría. */
+.hero, .salones, .mesa, .olivenza, .galeria, .donde, .menu-movil { background-image: var(--grano); }
+
 /* ---------- versión «Sobria»: el cordón solo donde significa algo ---------- */
 html.densidad-sobria .cordon[data-densidad="cordon"] { display: none; }
-html.densidad-sobria .arco:not(.portal__ventana) { clip-path: none !important; border-radius: 0; }
+html.densidad-sobria .arco:not(.portal__ventana) { clip-path: none; border-radius: 0; }
+/* en la «Sobria» las fotos no van en arco: su apertura es un rectángulo que sube */
+html.con-movimiento.densidad-sobria .revela { clip-path: inset(100% 0 0 0); }
+html.con-movimiento.densidad-sobria .revela.es-abierto { clip-path: inset(0); }
 
 /* ---------- movimiento reducido: sin transiciones, mismo contenido ---------- */
 @media (prefers-reduced-motion: reduce) {

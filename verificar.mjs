@@ -38,6 +38,28 @@ const comprobar = (cond, m, detalle) => (cond ? ok(m) : mal(m + (detalle !== und
 const espera = (ms) => new Promise((r) => setTimeout(r, ms));
 const cap = async (page, nombre, op) => { if (CAPTURAS) await page.screenshot({ path: path.join(DIR_CAP, nombre + '.png'), ...(op || {}) }); };
 const sinCookies = () => { try { localStorage.setItem('heredero-cookies', 'si'); } catch (e) {} };
+// el gesto del portal ya enseñado en esta sesión (para que no se cruce con otras pruebas)
+const sinGesto = () => { try { sessionStorage.setItem('heredero-gesto', '1'); } catch (e) {} };
+// textos generados por CSS (el contador de las láminas) tal como se pintan
+const laminas = async (page) => {
+  const cdp = await page.context().newCDPSession(page);
+  const s = await cdp.send('DOMSnapshot.captureSnapshot', { computedStyles: [] });
+  const L = s.documents[0].layout.text.map((i) => (i >= 0 ? s.strings[i] : ''));
+  const r = [];
+  L.forEach((t, i) => { if (t === 'N.º ') r.push(L.slice(i, i + 4).join('').replace(/\s+/g, ' ').trim()); });
+  await cdp.detach();
+  return r;
+};
+// congela las aperturas en arco a medias (transitionrun → pausa al 18 % del tiempo: la
+// curva va muy cargada al principio y a esa altura la puerta ya va por la mitad)
+const congelarAperturas = () => {
+  document.addEventListener('transitionrun', (e) => {
+    if (!window.__congelar || e.propertyName !== 'clip-path' || !e.target.classList.contains('revela')) return;
+    e.target.getAnimations().forEach((a) => { if (a.transitionProperty === 'clip-path') { a.pause(); a.currentTime = a.effect.getTiming().duration * 0.18; } });
+    (window.__congelados = window.__congelados || []).push(e.target);
+  }, true);
+};
+const soltarAperturas = (page) => page.evaluate(() => { window.__congelar = false; (window.__congelados || []).forEach((el) => el.getAnimations().forEach((a) => a.play())); });
 
 const browser = await chromium.launch({ headless: true });
 
@@ -111,6 +133,15 @@ comprobar(/html\.cortina-fuera \.cortina/.test(css), 'regla de retirada de la co
 const mainJs = fs.readFileSync(path.join(RAIZ, 'js/main.js'), 'utf8');
 comprobar(/autoRound:\s*false/.test(mainJs), 'trazos con autoRound:false');
 comprobar(/esBarra\(\)\) return/.test(mainJs), 'resize: la barra del móvil no rehace nada');
+{
+  // paquete A · 1: grano de papel con feTurbulence en una tesela (sin canvas por fotograma)
+  const idx = fs.readFileSync(path.join(RAIZ, 'index.html'), 'utf8');
+  comprobar(/--grano:\s*url\("data:image\/svg\+xml,[^"]*feTurbulence/.test(css) && /body\s*\{[^}]*var\(--grano\)/.test(css) && !/<canvas/i.test(idx) && !/getContext\(/.test(mainJs),
+    'grano: tesela SVG con feTurbulence en --grano, sobre el papel; sin canvas');
+  // paquete A · 2: la apertura es una transición CSS (ningún tween de GSAP toca clip-path)
+  comprobar(/\.revela\.es-abriendo\s*\{[^}]*transition:\s*clip-path/.test(css) && !/gsap\.[a-zA-Z]+\([^)]*clipPath/.test(mainJs) && !/style\.clipPath\s*=/.test(mainJs),
+    'aperturas: transición CSS de clip-path, sin GSAP ni clip-path en línea');
+}
 
 /* contraste de los tokens de texto (WCAG 2) */
 console.log('\n0b. Contraste');
@@ -132,6 +163,7 @@ for (const [a, ca, b, cb] of PARES) { const r = ratio(ca, cb); comprobar(r >= 4.
 console.log('\n1. Escritorio · cortina y hero');
 {
   const { ctx, page } = await nueva();
+  await page.addInitScript(sinGesto);
   await page.addInitScript(() => {
     window.__m = [];
     const t0 = performance.now();
@@ -168,6 +200,27 @@ console.log('\n1. Escritorio · cortina y hero');
   });
   comprobar(hero.partido && hero.visto && /Una puerta abierta/.test(hero.label), 'hero: titular partido, visible y con aria-label', hero);
   comprobar((await offsetMascara(page, '#portal')) === 0, 'hero: el cordón rodea el portal entero');
+
+  /* paquete A · 1: rótulos de lámina y coordenadas */
+  const lam = await laminas(page);
+  const esperadas = ['Habitaciones', 'Salones Olivenza', 'A la mesa', 'Desde 1985', 'Olivenza', 'Tradición taurina', 'Cómo llegar'];
+  comprobar(lam.length === esperadas.length && lam.every((t, i) => t === `N.º ${String(i + 1).padStart(2, '0')} · ${esperadas[i].toUpperCase()}`),
+    'rótulos: «N.º 01 · Habitaciones» … «N.º 07 · Cómo llegar», seguidos', lam);
+  const coord = await page.evaluate(() => { const c = document.querySelector('.hero__coord'); const r = c.getBoundingClientRect(); return { t: c.textContent, vis: r.height > 0 && getComputedStyle(c).visibility === 'visible' }; });
+  comprobar(/38° 41′ 27″ N · 7° 05′ 38″ O/.test(coord.t) && coord.vis, 'hero: coordenadas del nodo de OSM del hotel (38° 41′ 27″ N · 7° 05′ 38″ O)', coord);
+  const grano = await page.evaluate(() => ({ body: getComputedStyle(document.body).backgroundImage, hero: getComputedStyle(document.querySelector('.hero')).backgroundImage, historia: getComputedStyle(document.querySelector('.historia')).backgroundImage, canvas: document.querySelectorAll('canvas').length }));
+  comprobar(/feTurbulence/.test(grano.body) && /feTurbulence/.test(grano.hero) && grano.historia === 'none' && grano.canvas === 0, 'grano: sobre el papel y la cal, no sobre el azul', { historia: grano.historia, canvas: grano.canvas });
+
+  /* paquete A · 3: el cordón con volumen (luz y sombra), como mucho 6 nodos */
+  const vol = await page.evaluate(() => [...document.querySelectorAll('svg.cordon, #cortina-cordon svg')].flatMap((svg) => [...svg.querySelectorAll('g.cordon__cuerpo')].map((g) => ({
+    nodos: g.querySelectorAll('path').length + 1,                   // + el trazo de su máscara
+    luz: !!g.querySelector('.cordon__luz'), sombra: !!g.querySelector('.cordon__sombra'),
+    filtros: !!svg.querySelector('filter') || getComputedStyle(g).filter !== 'none',
+  }))));
+  comprobar(vol.length >= 2 && vol.every((v) => v.nodos <= 6 && v.luz && v.sombra && !v.filtros), `cordón con volumen: luz y sombra en los ${vol.length} cordones construidos, ≤ 6 nodos, sin filtros`, vol.slice(0, 3));
+
+  /* paquete A · 5: cabecera compacta al bajar */
+  const cabArriba = await page.evaluate(() => ({ entero: +getComputedStyle(document.querySelector('.cab__logo')).opacity, compacto: +getComputedStyle(document.querySelector('.cab__compacto')).opacity }));
   const cursor = await page.evaluate(() => ({ propio: !!document.querySelector('.cursor,#cursor'), body: getComputedStyle(document.body).cursor }));
   comprobar(!cursor.propio && cursor.body !== 'none', 'sin cursor propio (se quitó del kit): el del sistema intacto', cursor);
   const ck = await page.evaluate(() => ({ h: document.getElementById('cookies').hidden, d: getComputedStyle(document.getElementById('cookies')).display }));
@@ -198,7 +251,15 @@ console.log('\n1. Escritorio · cortina y hero');
   const baja = vs.every((v, i) => i === 0 || v <= vs[i - 1] + 0.02);
   comprobar(vs[0] > 0.9 && Math.min(...vs) < 0.05 && baja, 'festón: se dibuja con el scroll, de 1 a 0 sin retroceder', vs.map((v) => +v.toFixed(2)));
 
+  await page.waitForTimeout(500);
+  const cabAbajo = await page.evaluate(() => { const c = document.getElementById('cab'); return { azul: c.classList.contains('es-azul'), entero: +getComputedStyle(document.querySelector('.cab__logo')).opacity, compacto: +getComputedStyle(document.querySelector('.cab__compacto')).opacity, ancho: Math.round(document.querySelector('.cab__compacto').getBoundingClientRect().width) }; });
   await bajarA(page, '#historia', 0);
+  await page.waitForTimeout(500);
+  const cabAzul = await page.evaluate(() => { const c = document.getElementById('cab'), s = getComputedStyle(c); return { azul: c.classList.contains('es-azul'), fondo: s.backgroundColor, texto: s.color, logo: getComputedStyle(document.querySelector('.cab__compacto')).color }; });
+  await cap(page, '13-cabecera-azul-1440', { clip: { x: 0, y: 0, width: 1440, height: 160 } });
+  comprobar(cabArriba.entero === 1 && cabArriba.compacto === 0 && !cabAbajo.azul && cabAbajo.entero === 0 && cabAbajo.compacto === 1 && cabAbajo.ancho <= 36
+    && cabAzul.azul && /rgba?\(19, 38, 56/.test(cabAzul.fondo) && cabAzul.texto === 'rgb(245, 235, 211)' && cabAzul.logo === 'rgb(245, 235, 211)',
+  'cabecera: logo compacto al bajar y azul con texto cal sobre «Desde 1985»', { cabArriba, cabAbajo, cabAzul });
   const h0 = await page.evaluate(() => ({ n: document.getElementById('historia-n').textContent, act: [...document.querySelectorAll('.hito')].findIndex((h) => h.classList.contains('es-activo')) }));
   await cap(page, '04-historia-inicio');
   for (let i = 0; i < 11; i++) { await page.mouse.wheel(0, 150); await page.waitForTimeout(70); }
@@ -254,6 +315,24 @@ console.log('\n1. Escritorio · cortina y hero');
   const cuerpo = decodeURIComponent((mailto.split('body=')[1] || ''));
   comprobar(mailto.startsWith('mailto:info@hotelheredero.net?subject=') && /Comunión/.test(decodeURIComponent(mailto)) && /Lucía Pérez/.test(cuerpo) && /140/.test(cuerpo) && /mayo de 2027/.test(cuerpo), 'eventos: el mailto lleva asunto y cuerpo bien codificados', cuerpo.slice(0, 160));
 
+  /* paquete A · 8: el nudo se aprieta antes de ir a la reserva */
+  await bajarA(page, '#pie', 200);
+  await page.waitForTimeout(900);
+  await page.click('#pie-btn');
+  await page.waitForTimeout(90);
+  const tiron = await page.evaluate(() => {
+    const svg = document.querySelector('.cordon--nudo');
+    const grupos = svg.querySelectorAll('g.cordon__cuerpo');
+    const lazo = grupos[grupos.length - 1];
+    const m = new DOMMatrix(getComputedStyle(lazo).transform);
+    const anims = lazo.getAnimations();
+    return { tramos: grupos.length, escala: +m.a.toFixed(3), duracion: anims[0] && anims[0].effect.getTiming().duration, arco: grupos[0].getAnimations().length, boton: document.getElementById('pie-btn').getAnimations().filter((a) => !(a instanceof CSSTransition)).length, scroll: Math.round(scrollY) };
+  });
+  await page.waitForTimeout(1700);
+  const llega = await page.evaluate(() => ({ top: Math.round(document.getElementById('reservar').getBoundingClientRect().top), foco: document.activeElement.id }));
+  comprobar(tiron.tramos === 2 && tiron.escala < 0.99 && tiron.escala >= 0.95 && tiron.duracion === 250 && tiron.arco === 0 && tiron.boton === 1 && Math.abs(llega.top) < 4 && llega.foco === 'r-entrada',
+    'nudo: «Reservar» del pie aprieta el lazo (escala ~0,96, 250 ms; el arco del logo quieto) y luego lleva a la reserva', { tiron, llega });
+
   comprobar(page._errores.length === 0, 'consola limpia y sin 404', page._errores);
   await ctx.close();
 }
@@ -267,6 +346,11 @@ console.log('\n3. Formulario de reserva');
   await ctx.route('**/booking1**', async (r) => { peticion = { url: r.request().url(), metodo: r.request().method(), datos: r.request().postData() }; await r.fulfill({ status: 200, contentType: 'text/html', body: '<p>motor</p>' }); });
   await page.goto(BASE);
   await esperarCortina(page);
+  // con el foco en la ventana de reserva, las anclas también llevan el foco: el siguiente Tab sigue en la sección
+  await page.evaluate(() => document.querySelector('.nav a[href="#salones"]').click());
+  await page.waitForTimeout(1300);
+  const focoAncla = await page.evaluate(() => ({ id: document.activeElement.id, tabindex: document.activeElement.getAttribute('tabindex') }));
+  comprobar(focoAncla.id === 'salones' && focoAncla.tabindex === '-1', 'anclas: el foco viaja a la sección de destino', focoAncla);
   const accion = await page.evaluate(() => { const f = document.getElementById('form-reserva'); return { a: f.action, m: f.method, t: f.target }; });
   comprobar(accion.a === 'https://heredero-olivenza-dot-hoteles-heredero.appspot.com/booking1' && accion.m === 'post' && accion.t === '_blank', 'reserva: action, POST y pestaña nueva', accion);
   // salida antes de la entrada → no se envía
@@ -287,6 +371,19 @@ console.log('\n3. Formulario de reserva');
   comprobar(!!popup && peticion && peticion.metodo === 'POST' && datos.get('startDate') === dmy(en) && datos.get('endDate') === dmy(sa)
     && datos.get('namespace') === 'heredero-olivenza' && datos.get('language') === 'SPANISH' && datos.get('numRooms') === '2'
     && datos.get('adultsRoom2') === '2' && !datos.has('adultsRoom3'), 'reserva: POST al motor con fechas dd/mm/aaaa y ocupación por habitación', peticion && peticion.datos);
+  await ctx.close();
+}
+{
+  // el navegador recuerda «2 habitaciones» al recargar: se simula sirviendo el select ya en 2
+  const { ctx, page } = await nueva();
+  await page.addInitScript(sinCookies);
+  const html = fs.readFileSync(path.join(RAIZ, 'index.html'), 'utf8')
+    .replace('<option value="1" selected>1</option><option value="2">2</option>', '<option value="1">1</option><option value="2" selected>2</option>');
+  await ctx.route(/localhost:\d+\/(index\.html)?(\?.*)?$/, (r) => r.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: html }));
+  await page.goto(BASE);
+  await page.waitForTimeout(500);
+  const hab = await page.evaluate(() => ({ v: document.getElementById('r-habs').value, h2: document.querySelector('.ocupa[data-hab="2"]').hidden, d2: document.querySelector('.ocupa[data-hab="2"]').disabled, h3: document.querySelector('.ocupa[data-hab="3"]').hidden }));
+  comprobar(hab.v === '2' && !hab.h2 && !hab.d2 && hab.h3, 'reserva: con «2 habitaciones» recordado al cargar, la habitación 2 se ve y se envía', hab);
   await ctx.close();
 }
 
@@ -316,7 +413,8 @@ console.log('\n4. Mando de densidades');
     desb: document.documentElement.scrollWidth - innerWidth,
   }));
   comprobar(antes.fest !== 'none' && antes.gal === 'none' && antes.clip, '«Cordón»: festón y arcos a la vista, sin galería', antes);
-  comprobar(sob.clase && sob.fest === 'none' && sob.portal !== 'none' && sob.nudo !== 'none' && sob.clip === 'none' && sob.clipHero && sob.gal !== 'none' && sob.fotos === 30 && sob.desb === 0, '«Sobria»: cordón solo en portal/columna/nudo, fotos rectas, galería completa (30)', sob);
+  // (las fotos que aún no han entrado esperan con su apertura rectangular: inset, nunca un arco)
+  comprobar(sob.clase && sob.fest === 'none' && sob.portal !== 'none' && sob.nudo !== 'none' && !/path/.test(sob.clip) && sob.clipHero && sob.gal !== 'none' && sob.fotos === 30 && sob.desb === 0, '«Sobria»: cordón solo en portal/columna/nudo, fotos rectas, galería completa (30)', sob);
   await page.click('[data-filtro="habitaciones"]');
   const filtradas = await page.evaluate(() => [...document.querySelectorAll('#galeria-rejilla li')].filter((l) => !l.hidden).length);
   comprobar(filtradas === 8, 'galería: el filtro «Habitaciones» deja 8', filtradas);
@@ -431,7 +529,15 @@ console.log('\n6. Movimiento reducido');
     n: document.getElementById('historia-n').textContent,
     hitos: [...document.querySelectorAll('.hito')].every((h) => h.classList.contains('es-activo')),
     pin: !!document.querySelector('.pin-spacer'),
+    revela: document.querySelectorAll('.revela').length,
+    arco: getComputedStyle(document.querySelector('.habs__arcos .arco')).clipPath.slice(0, 5),
+    historia: getComputedStyle(document.querySelector('.historia')).clipPath,
+    gesto: sessionStorage.getItem('heredero-gesto'),
+    x0: window.__portal.estado().x,
   }));
+  await page.waitForTimeout(3500);
+  const xr = await page.evaluate(() => ({ x: window.__portal.estado().x, gesto: sessionStorage.getItem('heredero-gesto') }));
+  comprobar(r.revela === 0 && r.arco === 'path(' && r.historia === 'none' && xr.gesto === null && xr.x === r.x0, 'reducido: sin aperturas (fotos y secciones ya a la vista) y sin enseñar el gesto', { r, xr });
   comprobar(r.cortina.every((d) => d === 'none'), 'reducido: la cortina no pinta ni un fotograma', r.cortina);
   comprobar(r.partidos === 0 && r.portal === 0 && r.feston === 0, 'reducido: titulares enteros y cordones completos', r);
   comprobar(r.n === '152' && r.hitos && !r.pin, 'reducido: «Desde 1985» sin pin, con todo el contenido (152 y los cuatro hitos)', r);
@@ -454,8 +560,10 @@ console.log('\n7. Sin GSAP');
     movimiento: document.documentElement.classList.contains('con-movimiento'),
     feston: +document.querySelector('.habs__fila mask path').getAttribute('stroke-dashoffset'),
     n: document.getElementById('historia-n').textContent,
+    revela: document.querySelectorAll('.revela').length,
+    tapadas: [...document.querySelectorAll('.salones__gran, .mesa__foto--ancha, .historia, .taurino')].filter((e) => getComputedStyle(e).clipPath !== 'none').length,
   }));
-  comprobar(r.cortina === 'none' && !r.movimiento && r.feston === 0 && r.n === '152', 'sin GSAP: sin cortina, todo a la vista y los cordones completos', r);
+  comprobar(r.cortina === 'none' && !r.movimiento && r.feston === 0 && r.n === '152' && r.revela === 0 && r.tapadas === 0, 'sin GSAP: sin cortina, todo a la vista (sin aperturas) y los cordones completos', r);
   await cap(page, '12-sin-gsap', { fullPage: true });
   const errs = page._errores.filter((e) => !/gsap|ERR_FAILED|cdnjs/i.test(e));
   comprobar(errs.length === 0, 'sin GSAP: sin errores propios', errs);
@@ -475,6 +583,147 @@ console.log('\n7b. CDN lento');
   await page.waitForTimeout(2300);
   const r = await page.evaluate(() => ({ visto: document.querySelector('.hero__tit').classList.contains('es-visto'), portal: +document.querySelector('#portal mask path').getAttribute('stroke-dashoffset') }));
   comprobar(tarda < 5200 && r.visto && r.portal === 0, 'CDN lento (3,2 s): la cortina se retira sin animarse y el hero entra igual', { tarda, ...r });
+  await ctx.close();
+}
+
+/* ================= 9. paquete A · aperturas en arco ================= */
+console.log('\n9. Aperturas en arco');
+for (const [w, h, q, nombre] of [[1440, 900, '', '1440'], [390, 844, '', '390'], [1440, 900, '?revision&densidad=sobria', 'sobria-1440']]) {
+  const { ctx, page } = await nueva({ viewport: { width: w, height: h } });
+  await page.addInitScript(sinCookies);
+  await page.addInitScript(sinGesto);
+  await page.addInitScript(congelarAperturas);
+  await page.goto(BASE + q);
+  await esperarCortina(page, 400);
+  if (nombre !== 'sobria-1440') await cap(page, `14-hero-${nombre}`);
+  const antes = await page.evaluate(() => ({ n: document.querySelectorAll('.revela').length, clip: getComputedStyle(document.querySelector('.habs__arcos .arco')).clipPath }));
+  await page.evaluate(() => { window.__congelar = true; });
+  await bajarA(page, '#habitaciones', w < 700 ? 40 : 90);
+  await page.waitForTimeout(200);
+  const medio = await page.evaluate(() => {
+    const a = document.querySelector('.habs__arcos .arco');
+    // el arco de reposo tal como lo serializa el navegador (normaliza el path)
+    const d = document.createElement('div');
+    d.style.clipPath = a.style.getPropertyValue('--arco');
+    document.body.appendChild(d);
+    const arco = getComputedStyle(d).clipPath;
+    d.remove();
+    return { congelada: (window.__congelados || []).includes(a), clip: getComputedStyle(a).clipPath, arco };
+  });
+  await cap(page, `15-apertura-${nombre}`);
+  await soltarAperturas(page);
+  await page.waitForTimeout(1600);
+  const fin = await page.evaluate(() => { const a = document.querySelector('.habs__arcos .arco'); return { revela: a.classList.contains('revela'), clip: getComputedStyle(a).clipPath }; });
+  const forma = nombre === 'sobria-1440' ? /^inset\(/ : /^path\(/;
+  // a mitad: ni cerrada ni abierta (una puerta intermedia); al acabar, el arco de reposo
+  const bien = antes.n >= 12 && /inset\(100%/.test(antes.clip) && medio.congelada && forma.test(medio.clip) && !/inset\(100%/.test(medio.clip) && medio.clip !== medio.arco && medio.clip !== 'inset(0px)'
+    && !fin.revela && (nombre === 'sobria-1440' ? fin.clip === 'none' : fin.clip === medio.arco);
+  comprobar(bien, nombre === 'sobria-1440' ? 'aperturas «Sobria»: la foto se abre en rectángulo (inset) y queda recta' : `aperturas ${w}: la foto se abre con una puerta que crece desde abajo y queda en su arco`, { antes, medio: { ...medio, clip: medio.clip.slice(0, 60), arco: medio.arco.slice(0, 40) }, fin: { ...fin, clip: fin.clip.slice(0, 40) } });
+  if (nombre === '1440') {
+    // una sección de color: «Desde 1985» entra por la puerta y luego queda sin recorte (el pin no se toca)
+    await page.evaluate(() => { window.__congelar = true; window.__congelados = []; });
+    // se lee en cuanto entra (la red de seguridad de 2,2 s de abrir() la cerraría si se espera)
+    for (let i = 0; i < 120; i++) {
+      if (await page.evaluate(() => document.querySelector('.historia').getBoundingClientRect().top < innerHeight * 0.75)) break;
+      await page.mouse.wheel(0, 260); await page.waitForTimeout(60);
+    }
+    await page.waitForTimeout(300);
+    const sec = await page.evaluate(() => { const s = document.querySelector('.historia'); return { congelada: (window.__congelados || []).includes(s), clip: getComputedStyle(s).clipPath.slice(0, 5) }; });
+    await cap(page, '15-apertura-seccion-1440');
+    await soltarAperturas(page);
+    await page.waitForTimeout(1800);
+    const sec2 = await page.evaluate(() => ({ revela: document.querySelector('.historia').classList.contains('revela'), clip: getComputedStyle(document.querySelector('.historia')).clipPath }));
+    comprobar(sec.congelada && sec.clip === 'path(' && !sec2.revela && sec2.clip === 'none', 'aperturas: «Desde 1985» entra por la puerta del portal y queda sin recorte', { sec, sec2 });
+  }
+  comprobar(page._errores.length === 0, `aperturas ${nombre}: consola limpia`, page._errores);
+  await ctx.close();
+}
+
+/* ================= 10. paquete A · barra de reserva en el móvil ================= */
+console.log('\n10. Barra de reserva (móvil)');
+{
+  const { ctx, page } = await nueva({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  await page.addInitScript(sinGesto);
+  await page.goto(BASE + '?revision');
+  await esperarCortina(page, 300);
+  const estado = () => page.evaluate(() => {
+    const b = document.getElementById('barra-res'), r = b.getBoundingClientRect(), m = document.getElementById('mando');
+    return { ver: b.classList.contains('es-visible') && getComputedStyle(b).visibility === 'visible', top: Math.round(r.top), mando: m.hidden ? null : Math.round(m.getBoundingClientRect().bottom) };
+  });
+  const ir = async (sel, margen = 0) => { await page.evaluate(([s, m]) => scrollTo(0, document.querySelector(s).getBoundingClientRect().top + scrollY - m), [sel, margen]); await page.waitForTimeout(700); };
+  const e = {};
+  e.hero = await estado();
+  await ir('#salones', 100);
+  e.cookies = await estado();                                   // el aviso de cookies sigue abierto
+  await page.click('#ck-si');
+  await page.waitForTimeout(600);
+  e.salones = await estado();
+  await cap(page, '16-barra-movil-390');
+  await page.tap('#menu-btn'); await page.waitForTimeout(600);
+  e.menu = await estado();
+  await page.tap('#menu-btn'); await page.waitForTimeout(600);
+  await ir('#reservar', 60);
+  e.reservar = await estado();
+  await ir('#pie', 100);
+  e.pie = await estado();
+  comprobar(!e.hero.ver && !e.cookies.ver && e.salones.ver && !e.menu.ver && !e.reservar.ver && !e.pie.ver,
+    'barra móvil: sale al dejar el hero; se esconde con el aviso de cookies, el menú, sobre la reserva y en el pie', e);
+  comprobar(e.salones.mando !== null && e.salones.mando <= e.salones.top, 'barra móvil: no tapa el mando de ?revision (sube por encima)', e.salones);
+  // los dos botones: Reservar al formulario, Llamar al teléfono
+  const enl = await page.evaluate(() => [...document.querySelectorAll('#barra-res a')].map((a) => [a.textContent.trim(), a.getAttribute('href'), Math.round(a.getBoundingClientRect().height)]));
+  comprobar(JSON.stringify(enl.map((x) => x.slice(0, 2))) === JSON.stringify([['Reservar', '#reservar'], ['Llamar', 'tel:+34924490835']]) && enl.every((x) => x[2] >= 44), 'barra móvil: «Reservar» va a #reservar y «Llamar» al teléfono, con botones de 44 px o más', enl);
+  // ningún campo de los formularios por debajo de 16 px (iOS hace zoom si no)
+  const chicos = await page.evaluate(() => [...document.querySelectorAll('#form-reserva select, #form-reserva input:not([type=hidden]), #form-evento select, #form-evento input, #form-evento textarea')]
+    .map((c) => [c.id || c.name, parseFloat(getComputedStyle(c).fontSize)]).filter(([, t]) => t < 16));
+  comprobar(chicos.length === 0, 'formularios a 390: todos los campos miden 16 px o más (sin zoom en iOS)', chicos);
+  // la barra del navegador: cambiar solo el alto no la mueve ni rehace nada
+  await ir('#salones', 100);
+  const antes = await estado();
+  await page.setViewportSize({ width: 390, height: 900 }); await page.waitForTimeout(400);
+  await page.setViewportSize({ width: 390, height: 844 }); await page.waitForTimeout(400);
+  const despues = await estado();
+  comprobar(antes.ver && despues.ver && antes.top === despues.top, 'barra móvil: el resize de la barra del navegador no la cambia', { antes, despues });
+  comprobar(page._errores.length === 0, 'barra móvil: consola limpia', page._errores);
+  await ctx.close();
+}
+{
+  const { ctx, page } = await nueva();
+  await page.addInitScript(sinCookies);
+  await page.addInitScript(sinGesto);
+  await page.goto(BASE + '?revision');
+  await esperarCortina(page, 300);
+  await bajarA(page, '#salones', 100);
+  const r = await page.evaluate(() => ({ d: getComputedStyle(document.getElementById('barra-res')).display, c: document.documentElement.classList.contains('con-barra') }));
+  comprobar(r.d === 'none' && !r.c, 'barra móvil: no existe en escritorio (≥ 1000 px)', r);
+  await ctx.close();
+}
+
+/* ================= 11. paquete A · el gesto se enseña solo ================= */
+console.log('\n11. El gesto se enseña solo');
+{
+  const { ctx, page } = await nueva();
+  await page.addInitScript(sinCookies);
+  await page.addInitScript(() => {
+    window.__xs = [];
+    const t0 = performance.now();
+    // se muestrea desde que se retira la cortina (el portal ya está medido)
+    const f = () => { if (window.__portal && document.documentElement.classList.contains('cortina-fuera')) window.__xs.push(window.__portal.estado().x); if (performance.now() - t0 < 9000) setTimeout(f, 30); };
+    setTimeout(f, 0);
+  });
+  const mide = async () => {
+    await esperarCortina(page, 0);
+    await page.waitForTimeout(4200);
+    return page.evaluate(() => { const xs = window.__xs; const x0 = xs[0]; return { x0, desvio: Math.round(Math.max(...xs.map((x) => Math.abs(x - x0)))), final: xs[xs.length - 1], guardado: sessionStorage.getItem('heredero-gesto') }; });
+  };
+  await page.goto(BASE);
+  const g1 = await mide();
+  await page.reload();
+  const g2 = await mide();
+  comprobar(g1.desvio >= 55 && g1.desvio <= 70 && Math.abs(g1.final - g1.x0) < 0.5 && g1.guardado === '1' && g2.desvio === 0,
+    'gesto: en la primera visita la vista se desliza ~60 px y vuelve; en la misma sesión ya no (sessionStorage)', { g1, g2 });
+  const txt = await page.evaluate(() => document.querySelector('#cookies p').textContent);
+  const priv = fs.readFileSync(path.join(RAIZ, 'privacidad.html'), 'utf8');
+  comprobar(/se desliza/.test(txt) && /almacenamiento de sesión/.test(priv), 'gesto: el aviso de cookies y la privacidad dicen lo que se guarda');
   await ctx.close();
 }
 
