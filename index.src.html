@@ -39,7 +39,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Albert+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
-<link rel="stylesheet" href="css/estilos.css?v=5862e376">
+<link rel="stylesheet" href="css/estilos.css?v=f84ef164">
 <link rel="stylesheet" href="css/taurino.css?v=0fc359b5">
 <link rel="icon" href="marca/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="marca/favicon-32.png" sizes="32x32" type="image/png">
@@ -94,7 +94,11 @@
 <header class="cab" id="cab">
   <div class="cab__env">
     <a class="cab__marca" href="#inicio" aria-label="Hotel Heredero, inicio">
-      <img class="cab__logo" src="marca/logo-heredero.svg" width="920" height="1108" alt="">
+      <span class="cab__logos">
+        <img class="cab__logo" src="marca/logo-heredero.svg" width="920" height="1108" alt="">
+        <!-- al bajar: el mismo marco y el mismo HH, sin los rótulos pequeños (no se redibuja) -->
+        <!--svg:marca/logo-compacto.svg class="cab__compacto" aria-hidden="true" focusable="false"-->
+      </span>
       <span class="cab__nombre">Hotel Heredero<i>★★★ · Olivenza</i></span>
     </a>
     <nav class="nav" aria-label="Principal">
@@ -137,6 +141,8 @@
       <a class="btn btn--tinta" href="#reservar">Ver disponibilidad</a>
       <a class="btn btn--linea" href="#salones">Organizar un evento</a>
     </div>
+    <!-- coordenadas del nodo de OpenStreetMap del hotel (node 6865899993: 38,69094 N · −7,09385) -->
+    <p class="hero__coord"><span class="oculto-visual">Coordenadas del hotel: </span>38° 41′ 27″ N · 7° 05′ 38″ O</p>
   </div>
 
   <figure class="portal" id="portal">
@@ -219,7 +225,7 @@
 <section class="habs" id="habitaciones" aria-labelledby="habs-tit">
   <div class="env">
     <header class="cabeza">
-      <p class="eti">Habitaciones</p>
+      <p class="eti" data-lamina>Habitaciones</p>
       <h2 id="habs-tit" data-partir>152 habitaciones para quedarse en Olivenza.</h2>
       <p class="cabeza__txt">Todas con baño completo, aire acondicionado y calefacción, wifi gratuito y televisión. Dos están adaptadas a personas con movilidad reducida, y cuatro son junior suites con minibar.</p>
     </header>
@@ -273,7 +279,7 @@
   <div class="env">
     <header class="cabeza cabeza--doble">
       <div>
-        <p class="eti">Salones Olivenza</p>
+        <p class="eti" data-lamina>Salones Olivenza</p>
         <h2 id="salones-tit" data-partir>Seis salones y una terraza para celebrarlo en Olivenza.</h2>
       </div>
       <p class="cabeza__txt">Bodas, comuniones, bautizos, comidas de empresa o la reunión de toda la familia. Desde el evento más íntimo hasta 900 invitados, con cocina propia y un departamento comercial que le acompaña desde la primera llamada.</p>
@@ -338,7 +344,7 @@
 <section class="mesa" id="mesa" aria-labelledby="mesa-tit">
   <div class="env mesa__env">
     <div class="mesa__txt">
-      <p class="eti">A la mesa</p>
+      <p class="eti" data-lamina>A la mesa</p>
       <h2 id="mesa-tit" data-partir>Restaurante Puente Ajuda y Cafetería del Ibérico.</h2>
       <p>El restaurante lleva el nombre del <strong>Puente de Ajuda</strong>, el puente de 1509 que unía Olivenza con Portugal sobre el Guadiana. Buena cocina y buen servicio, como el primer día.</p>
       <p>En la <strong>Cafetería del Ibérico</strong>, desde el primer café hasta las tapas de la tarde, con los mejores productos de la zona.</p>
@@ -361,7 +367,7 @@
       <svg class="cordon cordon--columna" data-cordon="columna" aria-hidden="true" focusable="false"></svg>
     </div>
     <div class="historia__cuerpo">
-      <p class="eti eti--oro">Desde 1985</p>
+      <p class="eti eti--oro" data-lamina>Desde 1985</p>
       <h2 id="historia-tit">De 36 habitaciones a 152, sin movernos de Olivenza.</h2>
       <p class="historia__cuenta" aria-live="off"><b id="historia-n">152</b> <span>habitaciones</span></p>
       <ol class="hitos" id="hitos">
@@ -378,7 +384,7 @@
 <section class="olivenza" id="olivenza" aria-labelledby="olivenza-tit">
   <div class="env">
     <header class="cabeza">
-      <p class="eti">Olivenza</p>
+      <p class="eti" data-lamina>Olivenza</p>
       <h2 id="olivenza-tit" data-partir>La ciudad que fue portuguesa.</h2>
       <p class="cabeza__txt">Olivenza fue portuguesa desde 1297 hasta 1801, y se nota en cada esquina: en el manuelino de sus iglesias, en los nombres de las calles y en el habla de su gente. Elvas, ya en Portugal, queda al otro lado de la raya.</p>
     </header>
@@ -386,7 +392,7 @@
 
   <div class="raya" aria-hidden="true">
     <span class="raya__lado raya__lado--es">Olivenza</span>
-    <svg class="cordon cordon--raya" data-cordon="raya" data-densidad="cordon" focusable="false"></svg>
+    <svg class="cordon cordon--raya" data-cordon="raya" data-densidad="cordon" aria-hidden="true" focusable="false"></svg>
     <span class="raya__lado raya__lado--pt">Portugal · Elvas</span>
   </div>
 
@@ -408,7 +414,7 @@
 <!-- ============ 8. MÓDULO TAURINO (se puede quitar: ver README) ============ -->
 <section class="taurino" id="taurino" data-modulo="taurino" aria-labelledby="taurino-tit">
   <div class="env taurino__env">
-    <p class="eti eti--oro">Tradición taurina</p>
+    <p class="eti eti--oro" data-lamina>Tradición taurina</p>
     <h2 id="taurino-tit">Cada marzo, Olivenza abre la temporada.</h2>
     <p>La Feria del Toro de Olivenza, a primeros de marzo, es la primera gran cita de la temporada taurina. Es nuestra tradición desde 1985: si viene a la feria, reserve con tiempo.</p>
     <a class="btn btn--oro" href="#reservar">Reservar para la feria</a>
@@ -420,7 +426,7 @@
 <section class="galeria" id="galeria" aria-labelledby="galeria-tit">
   <div class="env">
     <header class="cabeza">
-      <p class="eti">Galería</p>
+      <p class="eti" data-lamina>Galería</p>
       <h2 id="galeria-tit">Todo el hotel, por dentro y por fuera.</h2>
     </header>
     <div class="galeria__filtros" role="group" aria-label="Filtrar fotos">
@@ -438,7 +444,7 @@
 <section class="donde" id="donde" aria-labelledby="donde-tit">
   <div class="env donde__env">
     <div class="donde__txt">
-      <p class="eti">Cómo llegar</p>
+      <p class="eti" data-lamina>Cómo llegar</p>
       <h2 id="donde-tit" data-partir>A la entrada de Olivenza, viniendo de Badajoz.</h2>
       <address>
         <p>Carretera de Badajoz, km 23,700<br>06100 Olivenza (Badajoz)</p>
@@ -514,9 +520,15 @@
   <button class="visor__btn visor__btn--sig" id="visor-sig" type="button" aria-label="Foto siguiente">→</button>
 </div>
 
+<!-- ============ barra de reserva (solo móvil, < 1000 px) ============ -->
+<nav class="barra-res" id="barra-res" aria-label="Reservar o llamar" aria-hidden="true">
+  <a class="btn btn--oro" href="#reservar">Reservar</a>
+  <a class="btn btn--linea-cal" href="tel:+34924490835">Llamar</a>
+</nav>
+
 <!-- ============ cookies ============ -->
 <div class="cookies" id="cookies" hidden role="region" aria-label="Aviso de cookies">
-  <p>Esta web no usa cookies de seguimiento. Solo recuerda en su navegador que ha visto este aviso. El mapa de Google y el motor de reservas ponen las suyas cuando los abre. <a href="privacidad.html">Más información</a>.</p>
+  <p>Esta web no usa cookies de seguimiento. Solo recuerda en su navegador que ha visto este aviso y, mientras dura la visita, que ya le enseñó que la foto de la portada se desliza. El mapa de Google y el motor de reservas ponen las suyas cuando los abre. <a href="privacidad.html">Más información</a>.</p>
   <div class="cookies__acc">
     <button class="btn btn--tinta" id="ck-si" type="button">Entendido</button>
     <button class="btn btn--linea" id="ck-no" type="button">Rechazar</button>
@@ -534,7 +546,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
-<script src="js/cordon.js?v=23d4b0c3"></script>
-<script src="js/main.js?v=b32c6f09"></script>
+<script src="js/cordon.js?v=ad670467"></script>
+<script src="js/main.js?v=86c750ad"></script>
 </body>
 </html>

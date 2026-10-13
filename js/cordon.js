@@ -15,6 +15,8 @@
   /* Geometría del marco del logo (marca/geometria.json), normalizada por el
      ancho de la línea central (875 px): un arco de semielipse con «hombros». */
   const LOGO = { repisa: 0.03826, hombro: 0.25989, rx: 0.49969, ry: 0.41945 };
+  /* De dónde viene la luz que da volumen a las hebras (arriba, algo a la izquierda). */
+  const LUZ = { x: -0.42, y: -0.91 };
 
   /* Portal abierto por abajo: sube por la izquierda, arco, baja por la derecha. */
   function portal(x, y, w, h, cerrar) {
@@ -57,19 +59,26 @@
     if (L / paso > 1800) paso = L / 1800;
     const n = Math.max(2, Math.floor(L / paso));
     const rx = g * 0.62, ry = g * 0.27;
+    // la luz del lomo: un óvalo más estrecho en la cara de cada hebra que mira a la luz
+    const lrx = rx * 0.6, lry = Math.max(0.35, ry * 0.32), lsep = ry * 0.42;
     // UNA muestra por hebra (getPointAtLength es caro); la tangente sale de las vecinas
     const pts = new Array(n + 1);
     for (let i = 0; i <= n; i++) pts[i] = guia.getPointAtLength((i / n) * L);
-    let a = '', b = '';
+    let a = '', b = '', luz = '';
+    const ovalo = (cx, cy, ex, ey, erx, ery, deg) => `M${f(cx + ex)},${f(cy + ey)}A${f(erx)} ${f(ery)} ${deg} 1 0 ${f(cx - ex)},${f(cy - ey)}`
+      + `A${f(erx)} ${f(ery)} ${deg} 1 0 ${f(cx + ex)},${f(cy + ey)}Z`;
     for (let i = 0; i <= n; i++) {
       const c = pts[i];
       const p0 = pts[Math.max(0, i - 1)], p1 = pts[Math.min(n, i + 1)];
       const th = Math.atan2(p1.y - p0.y, p1.x - p0.x) + 1.01;   // ~58° de torsión
-      const dx = Math.cos(th) * rx, dy = Math.sin(th) * rx;
+      const co = Math.cos(th), si = Math.sin(th);
       const deg = f(th * 180 / Math.PI);
-      const e = `M${f(c.x + dx)},${f(c.y + dy)}A${f(rx)} ${f(ry)} ${deg} 1 0 ${f(c.x - dx)},${f(c.y - dy)}`
-        + `A${f(rx)} ${f(ry)} ${deg} 1 0 ${f(c.x + dx)},${f(c.y + dy)}Z`;
+      const e = ovalo(c.x, c.y, co * rx, si * rx, rx, ry, deg);
       if (i % 2) a += e; else b += e;
+      // normal de la hebra hacia la luz (arriba a la izquierda): ahí brilla el oro
+      let nx = -si, ny = co;
+      if (nx * LUZ.x + ny * LUZ.y < 0) { nx = -nx; ny = -ny; }
+      luz += ovalo(c.x + nx * lsep, c.y + ny * lsep, co * lrx, si * lrx, lrx, lry, deg);
     }
 
     // la máscara solo cubre la caja del cordón: repintar una máscara del tamaño
@@ -86,10 +95,15 @@
       pathLength: '1', 'stroke-dasharray': '1 2', 'stroke-dashoffset': '1',
     }, mask);
 
+    // 6 nodos por cordón: el trazo de la máscara + sombra, alma, dos cabos y luz.
+    // Sin filtros ni blur: la sombra es el cuerpo desplazado 1-2 px y la luz, otro path.
     const grupo = el('g', { class: 'cordon__cuerpo', mask: `url(#${id})` }, svg);
+    const so = Math.max(1, Math.min(2, g * 0.2));
+    el('path', { d, class: 'cordon__sombra', fill: 'none', 'stroke-width': f(g * 1.1), 'stroke-linecap': 'round', 'stroke-linejoin': 'round', transform: `translate(${f(so * 0.5)} ${f(so)})` }, grupo);
     el('path', { d, class: 'cordon__alma', fill: 'none', 'stroke-width': f(g * 0.78), 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, grupo);
     el('path', { d: b, class: 'cordon__cabo-a', 'stroke-width': f(g * 0.07) }, grupo);
     el('path', { d: a, class: 'cordon__cabo-b', 'stroke-width': f(g * 0.07) }, grupo);
+    el('path', { d: luz, class: 'cordon__luz' }, grupo);
 
     let ultimo = -1;
     const api = {
