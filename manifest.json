@@ -1,0 +1,12 @@
+{
+  "name": "Hotel Heredero · Olivenza",
+  "short_name": "Heredero",
+  "start_url": "index.html",
+  "display": "browser",
+  "background_color": "#F5EBD3",
+  "theme_color": "#F5EBD3",
+  "icons": [
+    { "src": "marca/favicon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "marca/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

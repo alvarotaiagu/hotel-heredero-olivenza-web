@@ -1,0 +1,10 @@
+/* MÓDULO TAURINO: se puede quitar (receta en el README).
+   Banda tipográfica, sin fotos: es parte de su relato, no su identidad. */
+.taurino { background: var(--tinta); color: var(--cal); padding: 88px 0; position: relative; overflow: clip; }
+.taurino::before {
+  content: '★★★'; position: absolute; right: 4vw; top: 50%; transform: translateY(-50%);
+  font-size: clamp(3rem, 12vw, 9rem); letter-spacing: .2em; color: #3A3235; pointer-events: none;
+}
+.taurino__env { position: relative; display: grid; gap: 18px; justify-items: start; max-width: 860px; }
+.taurino h2 { font-size: clamp(2rem, 4.4vw, 3.4rem); }
+.taurino p { color: #D8CFC4; max-width: 56ch; }

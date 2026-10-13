@@ -1,0 +1,80 @@
+{
+  "viewBox": "0 0 920 1108",
+  "nota": "Coordenadas en el espacio de logo-heredero.svg (0 0 920 1108). Trazo del marco = 7 px, esquinas en inglete (miter).",
+  "marco": {
+    "pathLineaCentral": "M21.5 236.5H54.98A437.23 367.02 0 0 1 863.70 236.5H896.5V1087.5H21.5Z",
+    "grosorTrazo": 7,
+    "strokeLinejoin": "miter",
+    "rectangulo": {
+      "izq": 21.5,
+      "der": 896.5,
+      "hombros_y": 236.5,
+      "base_y": 1087.5
+    },
+    "alturaHombrosCentro": 236.5,
+    "alturaHombrosCaraSuperior": 233,
+    "alturaHombrosCaraInferior": 240,
+    "arranqueArco": {
+      "izq": [
+        54.98,
+        236.5
+      ],
+      "der": [
+        863.7,
+        236.5
+      ]
+    },
+    "arco": {
+      "tipo": "semielipse (no es circunferencia: el mejor circulo da rms 1.3 px, la elipse 0.04 px)",
+      "centro": [
+        459.34,
+        376.12
+      ],
+      "rx": 437.23,
+      "ry": 367.02,
+      "apice": [
+        459.34,
+        9.1
+      ],
+      "radioCircunferenciaAjustada": 486.8,
+      "rmsElipse_px": 0.04
+    },
+    "ejeSimetria_x": 459.34,
+    "ejeSimetriaRectangulo_x": 459.0,
+    "pasoEnPx": "rectangulo centrado en x=459; arco centrado en x=459.34"
+  },
+  "cajaHH": {
+    "x": 105,
+    "y": 418,
+    "w": 709,
+    "h": 453
+  },
+  "cajaHHconEstrellas": {
+    "x": 105,
+    "y": 418,
+    "w": 709,
+    "h": 453
+  },
+  "cajaEstrellas": {
+    "x": 436,
+    "y": 554,
+    "w": 47,
+    "h": 182
+  },
+  "cajaTextoSuperior": {
+    "texto": "Grupo Hoteles",
+    "x": 65,
+    "y": 268,
+    "w": 764,
+    "h": 80
+  },
+  "cajaTextoInferior": {
+    "texto": "Heredero",
+    "x": 210,
+    "y": 929,
+    "w": 475,
+    "h": 65
+  },
+  "tinta": "#231E20",
+  "cal": "#F5EBD3"
+}

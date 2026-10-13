@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Hotel Heredero *** · Olivenza · Habitaciones, salones y restaurante desde 1985</title>
+<meta name="description" content="Hotel Heredero, tres estrellas en Olivenza (Badajoz) desde 1985: 152 habitaciones, seis salones para celebraciones de hasta 900 invitados, restaurante Puente Ajuda y Cafetería del Ibérico.">
+<meta name="theme-color" content="#F5EBD3">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_ES">
+<meta property="og:title" content="Hotel Heredero *** · Olivenza">
+<meta property="og:description" content="Una puerta abierta en Olivenza desde 1985: 152 habitaciones, seis salones y el restaurante Puente Ajuda.">
+<meta property="og:image" content="img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<!-- script bloqueante: clases antes del primer pintado -->
+<script>
+(function (d) {
+  var h = d.documentElement;
+  h.classList.add('js');
+  try {
+    var q = new URLSearchParams(location.search);
+    // MANDO DE MAQUETA (no viaja al cliente): solo con ?revision
+    if (q.has('revision')) {
+      h.classList.add('revision');
+      if (q.get('densidad') === 'sobria') h.classList.add('densidad-sobria');
+    }
+  } catch (e) {}
+  // red de seguridad por si main.js no llega: la cortina se va sola
+  window.__redCortina = setTimeout(function () { h.classList.add('cortina-fuera'); }, 6500);
+})(document);
+</script>
+
+<!-- la foto del hero (LCP) empieza a bajar antes que el CSS y los scripts -->
+<link rel="preload" as="image" type="image/avif" fetchpriority="high"
+      imagesrcset="img/fotos/fachada-panoramica-800.avif 800w, img/fotos/fachada-panoramica-1280.avif 1280w, img/fotos/fachada-panoramica-1920.avif 1920w"
+      imagesizes="(max-width: 899px) 300vw, 1300px">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Albert+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<link rel="stylesheet" href="css/estilos.css?v=5862e376">
+<link rel="stylesheet" href="css/taurino.css?v=0fc359b5">
+<link rel="icon" href="marca/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="marca/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="marca/apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<noscript><style>.cortina{display:none!important}</style></noscript>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Hotel",
+  "name": "Hotel Heredero",
+  "starRating": { "@type": "Rating", "ratingValue": "3" },
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Carretera de Badajoz, km 23,700",
+    "postalCode": "06100",
+    "addressLocality": "Olivenza",
+    "addressRegion": "Badajoz",
+    "addressCountry": "ES"
+  },
+  "telephone": "+34 924 49 08 35",
+  "email": "info@hotelheredero.net",
+  "numberOfRooms": 152,
+  "foundingDate": "1985-03",
+  "amenityFeature": [
+    { "@type": "LocationFeatureSpecification", "name": "Wifi gratuito", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Aparcamiento", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Restaurante", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Salones para eventos", "value": true }
+  ]
+}
+</script>
+</head>
+<body>
+
+<a class="saltar" href="#principal">Saltar al contenido</a>
+
+<!-- ============ cortina: el cordón dibuja el portal y la puerta se abre ============ -->
+<div class="cortina" id="cortina" aria-hidden="true">
+  <svg class="cortina__lienzo" id="cortina-lienzo" focusable="false">
+    <path class="cortina__muro" id="cortina-muro" fill-rule="evenodd"/>
+    <g id="cortina-grupo">
+      <g id="cortina-cordon"></g>
+      <!--svg:marca/hh.svg id="cortina-hh" class="cortina__hh" preserveAspectRatio="xMidYMid meet"-->
+    </g>
+  </svg>
+  <p class="cortina__txt" id="cortina-txt">Olivenza · desde 1985</p>
+</div>
+
+<!-- ============ cabecera ============ -->
+<header class="cab" id="cab">
+  <div class="cab__env">
+    <a class="cab__marca" href="#inicio" aria-label="Hotel Heredero, inicio">
+      <img class="cab__logo" src="marca/logo-heredero.svg" width="920" height="1108" alt="">
+      <span class="cab__nombre">Hotel Heredero<i>★★★ · Olivenza</i></span>
+    </a>
+    <nav class="nav" aria-label="Principal">
+      <a href="#habitaciones">Habitaciones</a>
+      <a href="#salones">Salones</a>
+      <a href="#mesa">Restaurante</a>
+      <a href="#olivenza">Olivenza</a>
+      <a href="#donde">Cómo llegar</a>
+    </nav>
+    <a class="btn btn--azul cab__reservar" href="#reservar">Reservar</a>
+    <button class="menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="menu-movil">
+      <span></span><span></span>
+      <span class="oculto-visual">Abrir el menú</span>
+    </button>
+  </div>
+</header>
+
+<div class="menu-movil" id="menu-movil" aria-hidden="true">
+  <nav aria-label="Menú móvil">
+    <a href="#habitaciones">Habitaciones</a>
+    <a href="#salones">Salones Olivenza</a>
+    <a href="#mesa">Restaurante y cafetería</a>
+    <a href="#historia">Desde 1985</a>
+    <a href="#olivenza">Olivenza</a>
+    <a href="#donde">Cómo llegar</a>
+  </nav>
+  <a class="btn btn--azul" href="#reservar">Reservar</a>
+  <a class="menu-movil__tel" href="tel:+34924490835">924 49 08 35</a>
+</div>
+
+<main id="principal">
+
+<!-- ============ 1. hero: el portal ============ -->
+<section class="hero" id="inicio" aria-labelledby="hero-tit">
+  <div class="hero__texto">
+    <p class="eti">Olivenza · desde 1985</p>
+    <h1 class="hero__tit" id="hero-tit" data-partir>Una puerta abierta en Olivenza <em>desde 1985.</em></h1>
+    <p class="hero__entra">152 habitaciones, seis salones y el restaurante Puente Ajuda, a la entrada de la ciudad que fue portuguesa.</p>
+    <div class="hero__acc">
+      <a class="btn btn--tinta" href="#reservar">Ver disponibilidad</a>
+      <a class="btn btn--linea" href="#salones">Organizar un evento</a>
+    </div>
+  </div>
+
+  <figure class="portal" id="portal">
+    <div class="portal__ventana arco" data-arco id="portal-ventana">
+      <div class="portal__pista" id="portal-pista">
+        <div class="portal__vista es-activa" data-vista="0">
+          <img data-foto="fachada-panoramica" sizes="(max-width: 899px) 300vw, 1300px" alt="Fachada del Hotel Heredero con la entrada de puerta giratoria, la marquesina y la escalinata" fetchpriority="high" loading="eager">
+        </div>
+        <div class="portal__vista" data-vista="1">
+          <img data-foto="terraza-panoramica" sizes="(max-width: 899px) 300vw, 1300px" alt="La terraza del hotel vista entre dos columnas, con su fuente y los cenadores">
+        </div>
+        <div class="portal__vista" data-vista="2">
+          <img data-foto="salon-ventanal-panoramica" sizes="(max-width: 899px) 300vw, 1300px" alt="Salón con ventanal corrido y vistas a Olivenza">
+        </div>
+      </div>
+    </div>
+    <svg class="cordon cordon--portal" data-cordon="portal" aria-hidden="true" focusable="false"></svg>
+    <span class="portal__estrellas" aria-hidden="true">★★★</span>
+    <figcaption class="portal__pista-txt" id="portal-pista-txt"><span aria-hidden="true">⟵</span> Deslice para mirar <span aria-hidden="true">⟶</span></figcaption>
+  </figure>
+</section>
+
+<!-- ============ 2. reserva: formulario real al motor de Paraty ============ -->
+<section class="reserva" id="reservar" aria-labelledby="reserva-tit">
+  <div class="env">
+    <h2 class="reserva__tit" id="reserva-tit">Consulte disponibilidad</h2>
+    <form class="reserva__form" id="form-reserva" method="post" target="_blank" novalidate
+          action="https://heredero-olivenza-dot-hoteles-heredero.appspot.com/booking1">
+      <input type="hidden" name="language" value="SPANISH">
+      <input type="hidden" name="namespace" value="heredero-olivenza">
+      <input type="hidden" name="roomFilter" value=".*">
+      <input type="hidden" name="roomFilterName" value="">
+      <input type="hidden" name="roomType" value="">
+      <input type="hidden" name="roomTypeValue" value="">
+      <input type="hidden" name="priceSeekerHotel" value="">
+      <input type="hidden" name="gclid" value="">
+      <input type="hidden" name="agesKid1" value="">
+      <input type="hidden" name="agesKid2" value="">
+      <input type="hidden" name="agesKid3" value="">
+      <input type="hidden" name="startDate" id="r-start">
+      <input type="hidden" name="endDate" id="r-end">
+
+      <div class="campo">
+        <label for="r-entrada">Entrada</label>
+        <input type="date" id="r-entrada" required>
+      </div>
+      <div class="campo">
+        <label for="r-salida">Salida</label>
+        <input type="date" id="r-salida" required>
+      </div>
+      <div class="campo campo--corto">
+        <label for="r-habs">Habitaciones</label>
+        <select id="r-habs" name="numRooms">
+          <option value="1" selected>1</option><option value="2">2</option><option value="3">3</option>
+        </select>
+      </div>
+      <fieldset class="ocupa" data-hab="1">
+        <legend>Habitación 1</legend>
+        <label>Adultos <select name="adultsRoom1"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
+        <label>Niños <select name="childrenRoom1"><option selected>0</option><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
+      </fieldset>
+      <fieldset class="ocupa" data-hab="2" hidden disabled>
+        <legend>Habitación 2</legend>
+        <label>Adultos <select name="adultsRoom2"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
+        <label>Niños <select name="childrenRoom2"><option selected>0</option><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
+      </fieldset>
+      <fieldset class="ocupa" data-hab="3" hidden disabled>
+        <legend>Habitación 3</legend>
+        <label>Adultos <select name="adultsRoom3"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
+        <label>Niños <select name="childrenRoom3"><option selected>0</option><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
+      </fieldset>
+      <button class="btn btn--oro reserva__ir" type="submit">Ver disponibilidad</button>
+      <p class="reserva__aviso" id="reserva-aviso" role="alert" aria-live="assertive"></p>
+    </form>
+    <p class="reserva__nota">Se abre nuestro motor de reservas seguro, con sus fechas ya puestas. ¿Ya tiene una reserva? <a href="http://www.hotelheredero.net/mis-reservas.html" rel="noopener" target="_blank">Mis reservas</a> · o llámenos al <a href="tel:+34924490835">924 49 08 35</a>.</p>
+  </div>
+</section>
+
+<!-- ============ 3. habitaciones: arcos en fila ============ -->
+<section class="habs" id="habitaciones" aria-labelledby="habs-tit">
+  <div class="env">
+    <header class="cabeza">
+      <p class="eti">Habitaciones</p>
+      <h2 id="habs-tit" data-partir>152 habitaciones para quedarse en Olivenza.</h2>
+      <p class="cabeza__txt">Todas con baño completo, aire acondicionado y calefacción, wifi gratuito y televisión. Dos están adaptadas a personas con movilidad reducida, y cuatro son junior suites con minibar.</p>
+    </header>
+
+    <div class="habs__fila">
+      <ul class="habs__arcos" id="habs-arcos">
+        <li class="arco-foto">
+          <div class="arco" data-arco><img data-foto="habitacion-dosel" sizes="(max-width: 699px) 46vw, (max-width: 1199px) 24vw, 290px" alt="Habitación con cabecero de madera en forma de tejado, mesillas y lámparas de pie"></div>
+          <p class="arco-foto__pie">La habitación</p>
+        </li>
+        <li class="arco-foto">
+          <div class="arco" data-arco><img data-foto="suite-sofa" sizes="(max-width: 699px) 46vw, (max-width: 1199px) 24vw, 290px" alt="Zona de estar con sofá amarillo y cojín bordado «Hotel Heredero», junto al dormitorio"></div>
+          <p class="arco-foto__pie">Zona de estar</p>
+        </li>
+        <li class="arco-foto">
+          <div class="arco" data-arco><img data-foto="habitacion-balcon" sizes="(max-width: 699px) 46vw, (max-width: 1199px) 24vw, 290px" alt="Escritorio y salida a un balcón con mesa y dos sillas"></div>
+          <p class="arco-foto__pie">Con balcón</p>
+        </li>
+        <li class="arco-foto">
+          <div class="arco" data-arco><img data-foto="bano" sizes="(max-width: 699px) 46vw, (max-width: 1199px) 24vw, 290px" alt="Baño con bañera, lavabo de pie y espejo"></div>
+          <p class="arco-foto__pie">Baño completo</p>
+        </li>
+      </ul>
+      <svg class="cordon cordon--feston" data-cordon="feston" data-densidad="cordon" aria-hidden="true" focusable="false"></svg>
+    </div>
+
+    <div class="habs__datos">
+      <dl class="cifras">
+        <div><dt>habitaciones</dt><dd data-cuenta="152">152</dd></div>
+        <div><dt>adaptadas a movilidad reducida</dt><dd data-cuenta="2">2</dd></div>
+        <div><dt>junior suites con minibar</dt><dd data-cuenta="4">4</dd></div>
+      </dl>
+      <ul class="equipo" aria-label="En todas las habitaciones">
+        <li>Televisión de plasma con satélite</li>
+        <li>Aire acondicionado y calefacción</li>
+        <li>Wifi gratuito</li>
+        <li>Teléfono e hilo musical</li>
+        <li>Secador de pelo</li>
+        <li>Servicio de habitaciones</li>
+        <li>Cunas y camas supletorias</li>
+        <li>Servicio de lavandería</li>
+      </ul>
+    </div>
+    <p class="habs__acc"><a class="btn btn--tinta" href="#reservar">Ver disponibilidad</a></p>
+  </div>
+</section>
+
+<!-- ============ 4. salones olivenza ============ -->
+<section class="salones" id="salones" aria-labelledby="salones-tit">
+  <svg class="cordon cordon--ese" data-cordon="ese" data-densidad="cordon" aria-hidden="true" focusable="false"></svg>
+  <div class="env">
+    <header class="cabeza cabeza--doble">
+      <div>
+        <p class="eti">Salones Olivenza</p>
+        <h2 id="salones-tit" data-partir>Seis salones y una terraza para celebrarlo en Olivenza.</h2>
+      </div>
+      <p class="cabeza__txt">Bodas, comuniones, bautizos, comidas de empresa o la reunión de toda la familia. Desde el evento más íntimo hasta 900 invitados, con cocina propia y un departamento comercial que le acompaña desde la primera llamada.</p>
+    </header>
+  </div>
+
+  <figure class="salones__gran">
+    <img data-foto="banquete-panoramica" sizes="100vw" alt="Salón montado para un banquete, con mantelería azul, sillas vestidas de blanco y cortinas granates">
+  </figure>
+
+  <div class="env">
+    <dl class="cifras cifras--fila">
+      <div><dt>salones</dt><dd data-cuenta="6">6</dd></div>
+      <div><dt>invitados como máximo</dt><dd data-cuenta="900">900</dd></div>
+      <div><dt>habitaciones para sus invitados</dt><dd data-cuenta="152">152</dd></div>
+      <div><dt>organizando celebraciones</dt><dd>1985</dd></div>
+    </dl>
+
+    <div class="salones__dos">
+      <div class="salones__txt">
+        <h3>Un menú para cada celebración</h3>
+        <p>Tenemos sugerencias de menú para cada tipo de celebración, y las cambiamos cuanto haga falta: cada evento es distinto y lo preparamos a su medida.</p>
+        <p>Si prefiere el aire libre, la terraza del hotel también acoge celebraciones.</p>
+      </div>
+
+      <form class="evento" id="form-evento" novalidate aria-labelledby="evento-tit">
+        <h3 id="evento-tit">Cuéntenos su celebración</h3>
+        <div class="campo">
+          <label for="e-tipo">Qué celebra</label>
+          <select id="e-tipo">
+            <option>Boda</option><option>Comunión</option><option>Bautizo</option>
+            <option>Comida o cena de empresa</option><option>Reunión familiar</option><option>Otra celebración</option>
+          </select>
+        </div>
+        <div class="campo"><label for="e-fecha">Fecha aproximada</label><input id="e-fecha" type="month"></div>
+        <div class="campo"><label for="e-inv">Invitados</label><input id="e-inv" type="number" min="1" max="900" inputmode="numeric" placeholder="Ej. 120"></div>
+        <div class="campo"><label for="e-nombre">Su nombre</label><input id="e-nombre" type="text" autocomplete="name" required></div>
+        <div class="campo"><label for="e-tel">Teléfono</label><input id="e-tel" type="tel" autocomplete="tel" inputmode="tel"></div>
+        <div class="campo campo--ancho"><label for="e-msg">Algo más que debamos saber</label><textarea id="e-msg" rows="3"></textarea></div>
+        <div class="evento__acc">
+          <button class="btn btn--tinta" type="submit">Preparar el correo</button>
+          <a class="btn btn--linea" href="tel:+34924490835">Llamar al 924 49 08 35</a>
+        </div>
+        <p class="evento__aviso" id="evento-aviso" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+
+  <div class="carril" id="carril-salones" role="group" aria-label="Fotos de los salones y la terraza">
+    <ul class="carril__pista">
+      <li><button class="carril__btn" type="button" data-visor="salones" data-nombre="banquete-copas"><span class="arco" data-arco><img data-foto="banquete-copas" sizes="(max-width: 699px) 70vw, 340px" alt="Copas y mesas montadas en uno de los salones"></span><span class="carril__pie">Mesas montadas</span></button></li>
+      <li><button class="carril__btn" type="button" data-visor="salones" data-nombre="salon-montaje"><span class="arco" data-arco><img data-foto="salon-montaje" sizes="(max-width: 699px) 70vw, 340px" alt="Salón diáfano con mesas redondas vestidas y columnas"></span><span class="carril__pie">Un salón diáfano</span></button></li>
+      <li><button class="carril__btn" type="button" data-visor="salones" data-nombre="mesa-detalle"><span class="arco" data-arco><img data-foto="mesa-detalle" sizes="(max-width: 699px) 70vw, 340px" alt="Detalle de una mesa de banquete con pan, copas y servilleta"></span><span class="carril__pie">El detalle de la mesa</span></button></li>
+      <li><button class="carril__btn" type="button" data-visor="salones" data-nombre="salones-olivenza"><span class="arco" data-arco><img data-foto="salones-olivenza" sizes="(max-width: 699px) 70vw, 340px" alt="Entrada a Salones Olivenza con alfombra roja y escalera de balaustres blancos"></span><span class="carril__pie">La entrada a Salones Olivenza</span></button></li>
+      <li><button class="carril__btn" type="button" data-visor="salones" data-nombre="terraza-columnas"><span class="arco" data-arco><img data-foto="terraza-columnas" sizes="(max-width: 699px) 70vw, 340px" alt="La terraza para eventos al aire libre, vista entre columnas"></span><span class="carril__pie">La terraza</span></button></li>
+      <li><button class="carril__btn" type="button" data-visor="salones" data-nombre="banquete-2"><span class="arco" data-arco><img data-foto="banquete-2" sizes="(max-width: 699px) 70vw, 340px" alt="Banquete con mesas largas en uno de los salones"></span><span class="carril__pie">Banquete</span></button></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ 5. a la mesa ============ -->
+<section class="mesa" id="mesa" aria-labelledby="mesa-tit">
+  <div class="env mesa__env">
+    <div class="mesa__txt">
+      <p class="eti">A la mesa</p>
+      <h2 id="mesa-tit" data-partir>Restaurante Puente Ajuda y Cafetería del Ibérico.</h2>
+      <p>El restaurante lleva el nombre del <strong>Puente de Ajuda</strong>, el puente de 1509 que unía Olivenza con Portugal sobre el Guadiana. Buena cocina y buen servicio, como el primer día.</p>
+      <p>En la <strong>Cafetería del Ibérico</strong>, desde el primer café hasta las tapas de la tarde, con los mejores productos de la zona.</p>
+    </div>
+    <figure class="mesa__foto mesa__foto--ancha">
+      <img data-foto="cafeteria-panoramica" sizes="(max-width: 899px) 100vw, 56vw" alt="La Cafetería del Ibérico, con barra, mesas y columnas revestidas de madera">
+      <figcaption>Cafetería del Ibérico</figcaption>
+    </figure>
+    <figure class="mesa__foto mesa__foto--arco">
+      <div class="arco" data-arco><img data-foto="mesa-detalle" sizes="(max-width: 899px) 60vw, 26vw" alt="Mesa puesta con pan, copas y servilleta"></div>
+      <figcaption>Cocina propia, también en los banquetes</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ 6. desde 1985: columna torsa ============ -->
+<section class="historia" id="historia" aria-labelledby="historia-tit">
+  <div class="historia__fijo" id="historia-fijo">
+    <div class="historia__columna">
+      <svg class="cordon cordon--columna" data-cordon="columna" aria-hidden="true" focusable="false"></svg>
+    </div>
+    <div class="historia__cuerpo">
+      <p class="eti eti--oro">Desde 1985</p>
+      <h2 id="historia-tit">De 36 habitaciones a 152, sin movernos de Olivenza.</h2>
+      <p class="historia__cuenta" aria-live="off"><b id="historia-n">152</b> <span>habitaciones</span></p>
+      <ol class="hitos" id="hitos">
+        <li class="hito" data-n="36"><b>Marzo de 1985</b> Abre el Hotel Heredero: 36 habitaciones, cafetería y un restaurante que hacía también de salón. Unos veinte puestos de trabajo en una ciudad pequeña.</li>
+        <li class="hito" data-n="152"><b>Años de crecer</b> Ampliamos las instalaciones y las equipamos con lo que pedía cada momento, sin cambiar de sitio ni de casa.</li>
+        <li class="hito" data-n="152"><b>2003</b> Llegamos a 152 habitaciones, con dos adaptadas y cuatro junior suites.</li>
+        <li class="hito" data-n="152"><b>Hoy</b> Seis salones, celebraciones de hasta 900 invitados y la misma puerta abierta.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. olivenza ============ -->
+<section class="olivenza" id="olivenza" aria-labelledby="olivenza-tit">
+  <div class="env">
+    <header class="cabeza">
+      <p class="eti">Olivenza</p>
+      <h2 id="olivenza-tit" data-partir>La ciudad que fue portuguesa.</h2>
+      <p class="cabeza__txt">Olivenza fue portuguesa desde 1297 hasta 1801, y se nota en cada esquina: en el manuelino de sus iglesias, en los nombres de las calles y en el habla de su gente. Elvas, ya en Portugal, queda al otro lado de la raya.</p>
+    </header>
+  </div>
+
+  <div class="raya" aria-hidden="true">
+    <span class="raya__lado raya__lado--es">Olivenza</span>
+    <svg class="cordon cordon--raya" data-cordon="raya" data-densidad="cordon" focusable="false"></svg>
+    <span class="raya__lado raya__lado--pt">Portugal · Elvas</span>
+  </div>
+
+  <div class="env">
+    <ul class="lugares">
+      <li><h3>Santa María Magdalena</h3><p>Iglesia manuelina del siglo XVI. Sus tres naves se apoyan en columnas torsas que parecen cabos de barco: el cordón de esta web sale de ahí.</p></li>
+      <li><h3>La portada del Ayuntamiento</h3><p>Otra portada manuelina, a unos pasos de la Magdalena.</p></li>
+      <li><h3>El castillo y la Alcazaba</h3><p>El recinto amurallado y la Torre del Homenaje, en el corazón de la ciudad vieja.</p></li>
+      <li><h3>Museo Etnográfico</h3><p>La vida de Olivenza y su comarca, junto al castillo.</p></li>
+      <li><h3>Puente de Ajuda</h3><p>De 1509, unía Olivenza con Portugal sobre el Guadiana. Le pusimos su nombre a nuestro restaurante.</p></li>
+    </ul>
+    <figure class="olivenza__patio">
+      <div class="arco" data-arco><img data-foto="patio-arcos" sizes="(max-width: 699px) 92vw, 548px" alt="Patio interior del hotel con arcos, columnas y una vidriera de colores"></div>
+      <figcaption>Arcos y vidriera, dentro del hotel.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ 8. MÓDULO TAURINO (se puede quitar: ver README) ============ -->
+<section class="taurino" id="taurino" data-modulo="taurino" aria-labelledby="taurino-tit">
+  <div class="env taurino__env">
+    <p class="eti eti--oro">Tradición taurina</p>
+    <h2 id="taurino-tit">Cada marzo, Olivenza abre la temporada.</h2>
+    <p>La Feria del Toro de Olivenza, a primeros de marzo, es la primera gran cita de la temporada taurina. Es nuestra tradición desde 1985: si viene a la feria, reserve con tiempo.</p>
+    <a class="btn btn--oro" href="#reservar">Reservar para la feria</a>
+  </div>
+</section>
+<!-- ============ fin del MÓDULO TAURINO ============ -->
+
+<!-- ============ galería completa (solo en la versión «Sobria») ============ -->
+<section class="galeria" id="galeria" aria-labelledby="galeria-tit">
+  <div class="env">
+    <header class="cabeza">
+      <p class="eti">Galería</p>
+      <h2 id="galeria-tit">Todo el hotel, por dentro y por fuera.</h2>
+    </header>
+    <div class="galeria__filtros" role="group" aria-label="Filtrar fotos">
+      <button type="button" class="filtro es-activo" data-filtro="todo" aria-pressed="true">Todo</button>
+      <button type="button" class="filtro" data-filtro="habitaciones" aria-pressed="false">Habitaciones</button>
+      <button type="button" class="filtro" data-filtro="salones" aria-pressed="false">Salones</button>
+      <button type="button" class="filtro" data-filtro="cafeteria" aria-pressed="false">Cafetería</button>
+      <button type="button" class="filtro" data-filtro="hotel" aria-pressed="false">El hotel</button>
+    </div>
+    <ul class="galeria__rejilla" id="galeria-rejilla"></ul>
+  </div>
+</section>
+
+<!-- ============ 9. dónde estamos ============ -->
+<section class="donde" id="donde" aria-labelledby="donde-tit">
+  <div class="env donde__env">
+    <div class="donde__txt">
+      <p class="eti">Cómo llegar</p>
+      <h2 id="donde-tit" data-partir>A la entrada de Olivenza, viniendo de Badajoz.</h2>
+      <address>
+        <p>Carretera de Badajoz, km 23,700<br>06100 Olivenza (Badajoz)</p>
+        <p><a href="tel:+34924490835">924 49 08 35</a><br><a href="mailto:info@hotelheredero.net">info@hotelheredero.net</a></p>
+      </address>
+      <p>Aparcamiento propio y público junto al hotel.</p>
+    </div>
+    <div class="mapa" id="mapa">
+      <div class="mapa__consent" id="mapa-consent">
+        <p>El mapa lo carga Google y pone sus propias cookies. Solo se carga si lo pide.</p>
+        <button class="btn btn--linea" id="mapa-btn" type="button">Ver el mapa</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ 10. pie: el nudo ============ -->
+<footer class="pie" id="pie">
+  <div class="pie__nudo" id="pie-nudo">
+    <svg class="cordon cordon--nudo" data-cordon="nudo" aria-hidden="true" focusable="false"></svg>
+    <div class="pie__portal" id="pie-portal">
+      <img class="pie__logo" src="marca/logo-heredero-claro.svg" width="920" height="1108" alt="Grupo Hoteles Heredero" loading="lazy">
+    </div>
+    <div class="pie__reserva">
+      <p class="pie__frase">Le esperamos en Olivenza.</p>
+      <a class="btn btn--cal pie__btn" id="pie-btn" href="#reservar">Reservar</a>
+    </div>
+  </div>
+
+  <div class="env pie__env">
+    <div>
+      <h2 class="pie__tit">Hotel Heredero ★★★</h2>
+      <p>Carretera de Badajoz, km 23,700 · 06100 Olivenza (Badajoz)</p>
+      <p><a href="tel:+34924490835">924 49 08 35</a> · <a href="mailto:info@hotelheredero.net">info@hotelheredero.net</a></p>
+    </div>
+    <div>
+      <h2 class="pie__tit">Grupo Hoteles Heredero</h2>
+      <ul>
+        <li><a href="https://www.hotellostemplarios.net" rel="noopener" target="_blank">Hotel Los Templarios</a></li>
+        <li><a href="https://www.apartamentosruralesheredero.com/inicio.html" rel="noopener" target="_blank">Apartamentos Rurales Heredero</a></li>
+      </ul>
+    </div>
+    <div>
+      <h2 class="pie__tit">Síganos</h2>
+      <ul>
+        <li><a href="https://www.facebook.com/grupohotelesheredero" rel="noopener" target="_blank">Facebook</a></li>
+        <li><a href="https://www.youtube.com/channel/UC7HtTEvMZJ38tRk8dAU0hdA" rel="noopener" target="_blank">YouTube</a></li>
+      </ul>
+    </div>
+    <div>
+      <h2 class="pie__tit">Información</h2>
+      <ul>
+        <li><a href="http://www.hotelheredero.net/mis-reservas.html" rel="noopener" target="_blank">Mis reservas</a></li>
+        <li><a href="aviso-legal.html">Aviso legal</a></li>
+        <li><a href="privacidad.html">Privacidad</a></li>
+        <li><a href="#" id="abrir-cookies">Cookies</a></li>
+      </ul>
+    </div>
+  </div>
+  <p class="env pie__base">© <span id="anno">2026</span> Hotel Heredero · Olivenza · Hotel de tres estrellas</p>
+</footer>
+
+<!-- ============ visor de fotos ============ -->
+<div class="visor" id="visor" hidden role="dialog" aria-modal="true" aria-label="Visor de fotos">
+  <figure class="visor__fig">
+    <img id="visor-img" alt="">
+    <figcaption><span id="visor-pie"></span> <span class="visor__cuenta" id="visor-cuenta"></span></figcaption>
+  </figure>
+  <button class="visor__btn visor__btn--x" id="visor-x" type="button" aria-label="Cerrar">✕</button>
+  <button class="visor__btn visor__btn--ant" id="visor-ant" type="button" aria-label="Foto anterior">←</button>
+  <button class="visor__btn visor__btn--sig" id="visor-sig" type="button" aria-label="Foto siguiente">→</button>
+</div>
+
+<!-- ============ cookies ============ -->
+<div class="cookies" id="cookies" hidden role="region" aria-label="Aviso de cookies">
+  <p>Esta web no usa cookies de seguimiento. Solo recuerda en su navegador que ha visto este aviso. El mapa de Google y el motor de reservas ponen las suyas cuando los abre. <a href="privacidad.html">Más información</a>.</p>
+  <div class="cookies__acc">
+    <button class="btn btn--tinta" id="ck-si" type="button">Entendido</button>
+    <button class="btn btn--linea" id="ck-no" type="button">Rechazar</button>
+  </div>
+</div>
+
+<!-- ============ MANDO DE MAQUETA: no viaja al cliente (ver README) ============ -->
+<div class="mando" id="mando" hidden role="group" aria-label="Versión de la web">
+  <span class="mando__eti">Versión</span>
+  <button type="button" data-densidad-btn="cordon" aria-pressed="true">Cordón</button>
+  <button type="button" data-densidad-btn="sobria" aria-pressed="false">Sobria</button>
+</div>
+<!-- ============ fin del MANDO DE MAQUETA ============ -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+<script src="js/cordon.js?v=23d4b0c3"></script>
+<script src="js/main.js?v=b32c6f09"></script>
+</body>
+</html>

@@ -1,0 +1,516 @@
+[
+  {
+    "nombre": "fachada",
+    "origen": "26.jpg",
+    "ancho": 800,
+    "alto": 511,
+    "anchos": [
+      480,
+      800
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": false
+  },
+  {
+    "nombre": "fachada-panoramica",
+    "origen": "36.jpg",
+    "ancho": 1920,
+    "alto": 650,
+    "anchos": [
+      800,
+      1280,
+      1920
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": true
+  },
+  {
+    "nombre": "fachada-lateral",
+    "origen": "31.jpg",
+    "ancho": 1920,
+    "alto": 650,
+    "anchos": [
+      800,
+      1280,
+      1920
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": true
+  },
+  {
+    "nombre": "terraza-columnas",
+    "origen": "38.jpg",
+    "ancho": 800,
+    "alto": 511,
+    "anchos": [
+      480,
+      800
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": false
+  },
+  {
+    "nombre": "terraza-panoramica",
+    "origen": "47.jpg",
+    "ancho": 1920,
+    "alto": 650,
+    "anchos": [
+      800,
+      1280,
+      1920
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": true
+  },
+  {
+    "nombre": "recepcion",
+    "origen": "27.jpg",
+    "ancho": 800,
+    "alto": 511,
+    "anchos": [
+      480,
+      800
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": false
+  },
+  {
+    "nombre": "salon-ventanal",
+    "origen": "07.jpg",
+    "ancho": 800,
+    "alto": 511,
+    "anchos": [
+      480,
+      800
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": false
+  },
+  {
+    "nombre": "salon-ventanal-panoramica",
+    "origen": "37.jpg",
+    "ancho": 1920,
+    "alto": 650,
+    "anchos": [
+      800,
+      1280,
+      1920
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": true,
+    "nota": "Misma toma que salon-ventanal (07) y la 29, pero recorte panoramico de 1920 px; la 07 conserva el encuadre completo."
+  },
+  {
+    "nombre": "banquete-panoramica",
+    "origen": "32.jpg",
+    "ancho": 1920,
+    "alto": 650,
+    "anchos": [
+      800,
+      1280,
+      1920
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": true
+  },
+  {
+    "nombre": "banquete-2",
+    "origen": "06.jpg",
+    "ancho": 1920,
+    "alto": 650,
+    "anchos": [
+      800,
+      1280,
+      1920
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": true,
+    "nota": "El origen 06 es panoramico 1920x650."
+  },
+  {
+    "nombre": "banquete-copas",
+    "origen": "23.jpg",
+    "ancho": 1920,
+    "alto": 650,
+    "anchos": [
+      800,
+      1280,
+      1920
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": true,
+    "nota": "Origen panoramico 1920x650."
+  },
+  {
+    "nombre": "mesa-detalle",
+    "origen": "52.jpg",
+    "ancho": 1920,
+    "alto": 650,
+    "anchos": [
+      800,
+      1280,
+      1920
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": true,
+    "nota": "Origen panoramico 1920x650."
+  },
+  {
+    "nombre": "salon-montaje",
+    "origen": "20.jpg",
+    "ancho": 800,
+    "alto": 511,
+    "anchos": [
+      480,
+      800
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": false
+  },
+  {
+    "nombre": "salones-olivenza-panoramica",
+    "origen": "44.jpg",
+    "ancho": 1920,
+    "alto": 650,
+    "anchos": [
+      800,
+      1280,
+      1920
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": true
+  },
+  {
+    "nombre": "salones-olivenza",
+    "origen": "45.jpg",
+    "ancho": 800,
+    "alto": 511,
+    "anchos": [
+      480,
+      800
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": false
+  },
+  {
+    "nombre": "cafeteria",
+    "origen": "49.jpg",
+    "ancho": 800,
+    "alto": 511,
+    "anchos": [
+      480,
+      800
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": false
+  },
+  {
+    "nombre": "cafeteria-barra",
+    "origen": "50.jpg",
+    "ancho": 800,
+    "alto": 511,
+    "anchos": [
+      480,
+      800
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": false
+  },
+  {
+    "nombre": "cafeteria-panoramica",
+    "origen": "51.jpg",
+    "ancho": 1920,
+    "alto": 650,
+    "anchos": [
+      800,
+      1280,
+      1920
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": true
+  },
+  {
+    "nombre": "habitacion-dosel",
+    "origen": "05.jpg",
+    "ancho": 800,
+    "alto": 527,
+    "anchos": [
+      480,
+      800
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": false
+  },
+  {
+    "nombre": "habitacion-dosel-panoramica",
+    "origen": "35.jpg",
+    "ancho": 1920,
+    "alto": 650,
+    "anchos": [
+      800,
+      1280,
+      1920
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": true
+  },
+  {
+    "nombre": "habitacion-tv",
+    "origen": "21.jpg",
+    "ancho": 800,
+    "alto": 511,
+    "anchos": [
+      480,
+      800
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": false
+  },
+  {
+    "nombre": "habitacion-balcon",
+    "origen": "22.jpg",
+    "ancho": 800,
+    "alto": 531,
+    "anchos": [
+      480,
+      800
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": false
+  },
+  {
+    "nombre": "habitacion-ventana",
+    "origen": "03.jpg",
+    "ancho": 800,
+    "alto": 531,
+    "anchos": [
+      480,
+      800
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": false
+  },
+  {
+    "nombre": "suite-salita",
+    "origen": "25.jpg",
+    "ancho": 1920,
+    "alto": 650,
+    "anchos": [
+      800,
+      1280,
+      1920
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": true,
+    "nota": "El origen 25 es panoramico 1920x650 (la 33/43 son la misma sala en 800 px, no usadas)."
+  },
+  {
+    "nombre": "suite-sofa",
+    "origen": "39.jpg",
+    "ancho": 800,
+    "alto": 531,
+    "anchos": [
+      480,
+      800
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": false
+  },
+  {
+    "nombre": "bano",
+    "origen": "34.jpg",
+    "ancho": 800,
+    "alto": 511,
+    "anchos": [
+      480,
+      800
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": false
+  },
+  {
+    "nombre": "escalera",
+    "origen": "24.jpg",
+    "ancho": 800,
+    "alto": 511,
+    "anchos": [
+      480,
+      800
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": false
+  },
+  {
+    "nombre": "salon-verde",
+    "origen": "30.jpg",
+    "ancho": 800,
+    "alto": 511,
+    "anchos": [
+      480,
+      800
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": false
+  },
+  {
+    "nombre": "pasillo-placa",
+    "origen": "41.jpg",
+    "ancho": 800,
+    "alto": 511,
+    "anchos": [
+      480,
+      800
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": false
+  },
+  {
+    "nombre": "patio-arcos",
+    "origen": "15.jpg",
+    "ancho": 548,
+    "alto": 219,
+    "anchos": [
+      480,
+      548
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": false,
+    "nota": "Origen pequeno (548x219): no se amplia."
+  },
+  {
+    "nombre": "detalle-cava",
+    "origen": "19.jpg",
+    "ancho": 800,
+    "alto": 531,
+    "anchos": [
+      480,
+      800
+    ],
+    "formatos": [
+      "avif",
+      "webp",
+      "jpg"
+    ],
+    "panoramica": false
+  }
+]
