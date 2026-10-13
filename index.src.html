@@ -21,11 +21,6 @@
   h.classList.add('js');
   try {
     var q = new URLSearchParams(location.search);
-    // MANDO DE MAQUETA (no viaja al cliente): solo con ?revision
-    if (q.has('revision')) {
-      h.classList.add('revision');
-      if (q.get('densidad') === 'sobria') h.classList.add('densidad-sobria');
-    }
   } catch (e) {}
   // red de seguridad por si main.js no llega: la cortina se va sola
   window.__redCortina = setTimeout(function () { h.classList.add('cortina-fuera'); }, 6500);
@@ -535,18 +530,11 @@
   </div>
 </div>
 
-<!-- ============ MANDO DE MAQUETA: no viaja al cliente (ver README) ============ -->
-<div class="mando" id="mando" hidden role="group" aria-label="Versión de la web">
-  <span class="mando__eti">Versión</span>
-  <button type="button" data-densidad-btn="cordon" aria-pressed="true">Cordón</button>
-  <button type="button" data-densidad-btn="sobria" aria-pressed="false">Sobria</button>
-</div>
-<!-- ============ fin del MANDO DE MAQUETA ============ -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
 <script src="js/cordon.js?v=ad670467"></script>
-<script src="js/main.js?v=86c750ad"></script>
+<script src="js/main.js?v=cd1a7276"></script>
 </body>
 </html>

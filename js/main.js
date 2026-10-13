@@ -951,26 +951,6 @@
     pintar();
   })();
 
-  /* ============ 16. MANDO DE MAQUETA (no viaja al cliente) ============ */
-  if (mando && raiz.classList.contains('revision')) {
-    const pulsar = (dens) => {
-      const sobria = dens === 'sobria';
-      raiz.classList.toggle('densidad-sobria', sobria);
-      $$('[data-densidad-btn]', mando).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.densidadBtn === dens)));
-      try {
-        const u = new URL(location.href);
-        if (sobria) u.searchParams.set('densidad', 'sobria'); else u.searchParams.delete('densidad');
-        history.replaceState(null, '', u);
-      } catch (e) {}
-      if (sobria) montarGaleria();
-      if (hayGSAP) ScrollTrigger.refresh();
-    };
-    $$('[data-densidad-btn]', mando).forEach((b) => b.addEventListener('click', () => pulsar(b.dataset.densidadBtn)));
-    pulsar(raiz.classList.contains('densidad-sobria') ? 'sobria' : 'cordon');
-    verMando();
-  }
-  /* ============ fin del MANDO DE MAQUETA ============ */
-
   /* ============ 17. mapa solo al pedirlo ============ */
   $('#mapa-btn').addEventListener('click', () => {
     const marco = document.createElement('iframe');

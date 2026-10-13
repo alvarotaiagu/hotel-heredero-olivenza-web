@@ -228,8 +228,6 @@ console.log('\n1. Escritorio · cortina y hero');
   await page.click('#ck-si');
   const ck2 = await page.evaluate(() => ({ d: getComputedStyle(document.getElementById('cookies')).display, ls: localStorage.getItem('heredero-cookies') }));
   comprobar(ck2.d === 'none' && ck2.ls === 'si', 'cookies: «Entendido» lo cierra de verdad', ck2);
-  const mando = await page.evaluate(() => ({ h: document.getElementById('mando').hidden, d: getComputedStyle(document.getElementById('mando')).display }));
-  comprobar(mando.h && mando.d === 'none', 'sin ?revision no hay mando', mando);
   await cap(page, '03-hero');
 
   // foco con forma de portal
@@ -386,49 +384,6 @@ console.log('\n3. Formulario de reserva');
   await page.waitForTimeout(500);
   const hab = await page.evaluate(() => ({ v: document.getElementById('r-habs').value, h2: document.querySelector('.ocupa[data-hab="2"]').hidden, d2: document.querySelector('.ocupa[data-hab="2"]').disabled, h3: document.querySelector('.ocupa[data-hab="3"]').hidden }));
   comprobar(hab.v === '2' && !hab.h2 && !hab.d2 && hab.h3, 'reserva: con «2 habitaciones» recordado al cargar, la habitación 2 se ve y se envía', hab);
-  await ctx.close();
-}
-
-/* ================= 4. densidades (?revision) ================= */
-console.log('\n4. Mando de densidades');
-{
-  const { ctx, page } = await nueva();
-  await page.goto(BASE + 'index.html?revision');
-  await esperarCortina(page, 200);
-  const conCk = await page.evaluate(() => ({ ck: !document.getElementById('cookies').hidden, m: document.getElementById('mando').hidden }));
-  comprobar(conCk.ck && conCk.m, 'mando: se aparta mientras está el aviso de cookies', conCk);
-  await page.click('#ck-si');
-  comprobar(await page.evaluate(() => !document.getElementById('mando').hidden), 'mando: aparece al cerrar las cookies');
-  const antes = await page.evaluate(() => ({ fest: getComputedStyle(document.querySelector('.cordon--feston')).display, gal: getComputedStyle(document.getElementById('galeria')).display, clip: getComputedStyle(document.querySelector('.habs__arcos .arco')).clipPath !== 'none' }));
-  await page.click('[data-densidad-btn="sobria"]');
-  await page.waitForTimeout(500);
-  const sob = await page.evaluate(() => ({
-    clase: document.documentElement.classList.contains('densidad-sobria'),
-    fest: getComputedStyle(document.querySelector('.cordon--feston')).display,
-    portal: getComputedStyle(document.querySelector('.cordon--portal')).display,
-    nudo: getComputedStyle(document.querySelector('.cordon--nudo')).display,
-    clip: getComputedStyle(document.querySelector('.habs__arcos .arco')).clipPath,
-    clipHero: getComputedStyle(document.getElementById('portal-ventana')).clipPath !== 'none',
-    gal: getComputedStyle(document.getElementById('galeria')).display,
-    fotos: document.querySelectorAll('#galeria-rejilla li').length,
-    url: location.search,
-    desb: document.documentElement.scrollWidth - innerWidth,
-  }));
-  comprobar(antes.fest !== 'none' && antes.gal === 'none' && antes.clip, '«Cordón»: festón y arcos a la vista, sin galería', antes);
-  // (las fotos que aún no han entrado esperan con su apertura rectangular: inset, nunca un arco)
-  comprobar(sob.clase && sob.fest === 'none' && sob.portal !== 'none' && sob.nudo !== 'none' && !/path/.test(sob.clip) && sob.clipHero && sob.gal !== 'none' && sob.fotos === 30 && sob.desb === 0, '«Sobria»: cordón solo en portal/columna/nudo, fotos rectas, galería completa (30)', sob);
-  await page.click('[data-filtro="habitaciones"]');
-  const filtradas = await page.evaluate(() => [...document.querySelectorAll('#galeria-rejilla li')].filter((l) => !l.hidden).length);
-  comprobar(filtradas === 8, 'galería: el filtro «Habitaciones» deja 8', filtradas);
-  await bajarA(page, '#galeria', 80);
-  await cap(page, '07-sobria-galeria');
-  await page.evaluate(() => document.querySelector('#galeria-rejilla [data-nombre="bano"]').click());
-  comprobar(await page.evaluate(() => document.getElementById('visor-img').dataset.nombre === 'bano'), 'galería: la miniatura abre su foto en el visor');
-  await page.keyboard.press('Escape');
-  await page.click('[data-densidad-btn="cordon"]');
-  const vuelta = await page.evaluate(() => ({ c: document.documentElement.classList.contains('densidad-sobria'), g: getComputedStyle(document.getElementById('galeria')).display }));
-  comprobar(!vuelta.c && vuelta.g === 'none', 'se puede volver a «Cordón»', vuelta);
-  comprobar(page._errores.length === 0, 'densidades: consola limpia', page._errores);
   await ctx.close();
 }
 
@@ -590,7 +545,7 @@ console.log('\n7b. CDN lento');
 
 /* ================= 9. paquete A · aperturas en arco ================= */
 console.log('\n9. Aperturas en arco');
-for (const [w, h, q, nombre] of [[1440, 900, '', '1440'], [390, 844, '', '390'], [1440, 900, '?revision&densidad=sobria', 'sobria-1440']]) {
+for (const [w, h, q, nombre] of [[1440, 900, '', '1440'], [390, 844, '', '390']]) {
   const { ctx, page } = await nueva({ viewport: { width: w, height: h } });
   await page.addInitScript(sinCookies);
   await page.addInitScript(sinGesto);
@@ -646,11 +601,11 @@ console.log('\n10. Barra de reserva (móvil)');
 {
   const { ctx, page } = await nueva({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
   await page.addInitScript(sinGesto);
-  await page.goto(BASE + '?revision');
+  await page.goto(BASE);
   await esperarCortina(page, 300);
   const estado = () => page.evaluate(() => {
-    const b = document.getElementById('barra-res'), r = b.getBoundingClientRect(), m = document.getElementById('mando');
-    return { ver: b.classList.contains('es-visible') && getComputedStyle(b).visibility === 'visible', top: Math.round(r.top), mando: m.hidden ? null : Math.round(m.getBoundingClientRect().bottom) };
+    const b = document.getElementById('barra-res'), r = b.getBoundingClientRect();
+    return { ver: b.classList.contains('es-visible') && getComputedStyle(b).visibility === 'visible', top: Math.round(r.top) };
   });
   const ir = async (sel, margen = 0) => { await page.evaluate(([s, m]) => scrollTo(0, document.querySelector(s).getBoundingClientRect().top + scrollY - m), [sel, margen]); await page.waitForTimeout(700); };
   const e = {};
@@ -670,7 +625,6 @@ console.log('\n10. Barra de reserva (móvil)');
   e.pie = await estado();
   comprobar(!e.hero.ver && !e.cookies.ver && e.salones.ver && !e.menu.ver && !e.reservar.ver && !e.pie.ver,
     'barra móvil: sale al dejar el hero; se esconde con el aviso de cookies, el menú, sobre la reserva y en el pie', e);
-  comprobar(e.salones.mando !== null && e.salones.mando <= e.salones.top, 'barra móvil: no tapa el mando de ?revision (sube por encima)', e.salones);
   // los dos botones: Reservar al formulario, Llamar al teléfono
   const enl = await page.evaluate(() => [...document.querySelectorAll('#barra-res a')].map((a) => [a.textContent.trim(), a.getAttribute('href'), Math.round(a.getBoundingClientRect().height)]));
   comprobar(JSON.stringify(enl.map((x) => x.slice(0, 2))) === JSON.stringify([['Reservar', '#reservar'], ['Llamar', 'tel:+34924490835']]) && enl.every((x) => x[2] >= 44), 'barra móvil: «Reservar» va a #reservar y «Llamar» al teléfono, con botones de 44 px o más', enl);
@@ -692,7 +646,7 @@ console.log('\n10. Barra de reserva (móvil)');
   const { ctx, page } = await nueva();
   await page.addInitScript(sinCookies);
   await page.addInitScript(sinGesto);
-  await page.goto(BASE + '?revision');
+  await page.goto(BASE);
   await esperarCortina(page, 300);
   await bajarA(page, '#salones', 100);
   const r = await page.evaluate(() => ({ d: getComputedStyle(document.getElementById('barra-res')).display, c: document.documentElement.classList.contains('con-barra') }));
@@ -737,25 +691,18 @@ console.log('\n8. Recetas de borrado');
   // taurino
   let sinToros = quitarEntre(src, '<!-- ============ 8. MÓDULO TAURINO', 'fin del MÓDULO TAURINO ============ -->');
   sinToros = sinToros.replace(/<link rel="stylesheet" href="css\/taurino\.css[^"]*">\n?/, '');
-  // mando
-  let sinMando = quitarEntre(src, '<!-- ============ MANDO DE MAQUETA', 'fin del MANDO DE MAQUETA ============ -->');
-  sinMando = quitarEntre(sinMando, '    // MANDO DE MAQUETA (no viaja al cliente): solo con ?revision', "if (q.get('densidad') === 'sobria') h.classList.add('densidad-sobria');\n    }");
-  const js = fs.readFileSync(path.join(RAIZ, 'js/main.js'), 'utf8');
-  const jsSinMando = quitarEntre(js, '  /* ============ 16. MANDO DE MAQUETA', 'fin del MANDO DE MAQUETA ============ */');
-  for (const [nombre, html, jsMod] of [['taurino', sinToros, null], ['mando', sinMando, jsSinMando]]) {
+  for (const [nombre, html, jsMod] of [['taurino', sinToros, null]]) {
     const { ctx, page } = await nueva();
     await page.addInitScript(sinCookies);
     await ctx.route(/localhost:\d+\/(index\.html)?(\?.*)?$/, (r) => r.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: html }));
     if (jsMod) await ctx.route(/js\/main\.js/, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: jsMod }));
-    await page.goto(BASE + (nombre === 'mando' ? '?revision' : ''));
+    await page.goto(BASE);
     await esperarCortina(page);
     const r = await page.evaluate(() => ({
-      taurino: !!document.getElementById('taurino'), mando: !!document.getElementById('mando'),
+      taurino: !!document.getElementById('taurino'),
       anclas: [...document.querySelectorAll('a[href^="#"]')].map((a) => a.getAttribute('href')).filter((h) => h.length > 1 && !document.querySelector(h)),
-      sobria: document.documentElement.classList.contains('densidad-sobria'),
     }));
-    if (nombre === 'taurino') comprobar(!r.taurino && r.anclas.length === 0 && page._errores.length === 0, 'quitar el módulo taurino: sin errores ni anclas rotas', { r, e: page._errores });
-    else comprobar(!r.mando && !r.sobria && r.anclas.length === 0 && page._errores.length === 0, 'quitar el mando: sin errores, y ?revision ya no hace nada', { r, e: page._errores });
+    comprobar(!r.taurino && r.anclas.length === 0 && page._errores.length === 0, 'quitar el módulo taurino: sin errores ni anclas rotas', { r, e: page._errores });
     await ctx.close();
   }
 }
