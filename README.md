@@ -64,7 +64,7 @@ Se probó el 2026-10-13: abre el paso 1 con las fechas ya puestas. **Si Paraty c
 ## §5 bis «Nivel»
 
 - **Se quitan del kit común:** la pila sticky, la marquesina y el cursor propio. También los botones magnéticos.
-- **Se añade:** el cordón trenzado (`js/cordon.js`) y **la puerta que se mira arrastrando**.
+- **Se añade:** el cordón trenzado (`js/cordon.js`) y **la puerta que se mira arrastrando**, con profundidad real desde el paquete B (`js/profundidad.js`).
 - **Gesto táctil del hero:** arrastre horizontal con inercia y vuelta a los topes, con `touch-action: pan-y`. El scroll vertical sobre el portal sigue funcionando (probado con eventos táctiles reales). En teclado, flechas con el portal enfocado.
 - **El objeto se completa en el pie:** el cordón cierra el portal alrededor del logo y se anuda en «Reservar».
 - **Foco del teclado con forma de portal:** el arco arriba (`border-radius` de arco), en azul sobre claro y oro sobre oscuro.
@@ -116,6 +116,8 @@ Medido el 2026-10-13 en un Pixel 7 emulado, con 4G lento (1,6 Mbps, 150 ms) y CP
 | **LCP** | **2,47 / 2,60 / 2,57 s**. El elemento es la foto de la fachada, que va precargada con `<link rel="preload">` en AVIF. En una pasada anterior salió 4,2 s porque los CDN compiten por la red. |
 | **INP** | **40 ms** (abrir y cerrar el menú). |
 | **Cortina** | `main.js` llega a los ~2,3 s y la cortina se retira a los ~5,2 s. |
+| **LCP con el paquete B** | **2,02 / 2,29 / 2,23 s** (mismo método, 2026-10-13). Sigue siendo la foto de la fachada. Intercalando las dos versiones con `profundidad.js` servido igual en ambas, sale **1,41 s con la profundidad y 1,44 s sin ella**: no cambia. |
+| **INP con el paquete B** | Con la GPU de la máquina, el arrastre del portal da **32 ms** (24–32 ms sin la profundidad), el chip de iOS 24–32 ms y el menú lo mismo en las dos versiones. Con SwiftShader (el WebGL por software del Chromium sin ventana), el arrastre sube a 56–64 ms porque cada dibujo cuesta 13–35 ms en la CPU. En un móvil con GPU, ese dibujo cuesta 1–4 ms. |
 
 Sobre la cortina:
 - Si GSAP llega **después de 2,5 s**, la cortina no se anima.
@@ -134,6 +136,45 @@ Rendimiento del cordón:
   - Los 117 ms de arriba se midieron con otro método; para comparar, usa siempre el mismo método con las dos versiones intercaladas.
 
 **Para bajar de 2 s** habría que mostrar la cortina solo una vez por sesión o quitarla en móvil. Es una decisión de Álvaro, porque chocaría con la cortina obligatoria del PLIEGO.
+
+## Paquete B «La fachada con profundidad» (2026-10-13)
+
+Idea 9 del documento de ideas. Las tres panorámicas del portal tienen un mapa de profundidad y un `<canvas>` WebGL las pinta desplazando cada píxel según lo cerca que está. Al arrastrar, al mover el ratón o al inclinar el móvil, la marquesina y la escalinata se adelantan y el edificio se aleja. En la terraza son las columnas, y en el salón, la pared y las plantas.
+
+**Cómo funciona** (`js/profundidad.js`, WebGL 1 sin librería y sin CDN):
+- El canvas va **encima** de la pista, dentro de `#portal-ventana`, así que el arco lo recorta igual que a la foto. Aparece con un fundido cuando ya ha pintado su primer fotograma, tras `load`, con la cortina ya fuera y en un rato libre.
+- **La foto LCP nunca se oculta:** el `<img>` de la fachada sigue debajo, visible.
+- El arrastre, la inercia, el elástico, las flechas, el gesto enseñado y la inactividad siguen siendo los de `main.js` § 6. Allí solo se añadieron avisos: `pintar()` y `siguiente()` avisan a quien escuche con `__portal.escuchar()`, y `estado()` da también `w` y `vw`. El canvas lee la posición de la pista y casa con ella al píxel.
+- **Sombreador:** un punto de profundidad *d* aparece desplazado `o·(d − ½)`, con un recorrido de ±2,5 % del ancho y ±1 % del alto. La foto no se amplía.
+  - En calidad alta busca la superficie de cerca a lejos (parallax con oclusión, 12 pasos), así que lo cercano tapa lo de detrás.
+  - Junto a los bordes de la foto el desplazamiento se apaga, para no leer fuera.
+  - En el elástico de los topes deja ver el azul de la ventana, como hoy.
+- **Entradas:**
+  - la velocidad de la pista al arrastrar (lo cercano va por delante del dedo);
+  - el ratón respecto a la pantalla, salvo con el botón pulsado;
+  - la inclinación del móvil. La primera lectura es la postura neutra y se recentra despacio.
+- **iOS:** si en 1 s no llega ninguna lectura del sensor y existe `DeviceOrientationEvent.requestPermission`, aparece el chip **«Mover con el móvil»**. iOS pide el permiso al tocarlo, y el chip se va tanto si lo concede como si no. En Android las lecturas llegan solas y no hay chip. Chrome también tiene `requestPermission`; por eso no basta con mirar si existe. **No se guarda nada en el navegador.**
+- **Pinta solo bajo demanda.** Cuando todo se asienta, el bucle se para. Fuera de pantalla y con la pestaña oculta no pinta.
+- **Calidad:** alta (12 pasos, DPR ≤ 2), media (6 pasos, DPR ≤ 1,5) y baja (1 muestra, DPR 1). El DPR nunca pasa de 2.
+  - Si la media de 10 fotogramas seguidos pasa de **20 ms**, baja un nivel. Si la pantalla va capada a 30 Hz (iOS en ahorro de energía), el umbral sube a 1,25 × su refresco (medido antes de arrancar, como mucho 42,5 ms). Antes descarta los 5 primeros tras arrancar o volver a la pantalla.
+  - Si en la calidad baja sigue lento, el canvas se retira y queda la foto. En la misma visita nunca vuelve a subir.
+- **Cambio de vista** (la inactividad): el canvas funde las dos texturas en 1,4 s, como el CSS.
+- **Respaldos sin canvas:**
+  - con movimiento reducido;
+  - sin GSAP (no hay `con-movimiento`, así que con el CDN caído la web queda estática como antes);
+  - sin WebGL;
+  - si falta un mapa de profundidad;
+  - si se pierde el contexto.
+- Para las pruebas está `window.__profundidad`, con `estado()` y `fijar([x, y])`.
+
+**Los mapas:** `img/fotos/<nombre>-prof.webp`, en gris (blanco = cerca), 960×325 y 4–7 KB cada uno. No están en `fotos.json`, porque no son fotos con `<picture>`. Se hicieron con **Depth Anything V2 Small**, con licencia Apache-2.0 (las versiones Base y Large son no comerciales y no se usan). El modelo es el ONNX de `onnx-community/depth-anything-v2-small` y se ejecuta con `onnxruntime` en la CPU. Receta:
+1. Cada panorámica de 1920 px, reducida a 518 px de alto (múltiplo de 14).
+2. Normalizar con los percentiles 2–98 y bajar a 960×325.
+3. Filtro guiado por la foto (radio 6, eps 1e-3), para que los bordes casen con los de la imagen.
+4. Dilatar el primer plano 3 px, para que el fondo no se pegue al borde de la marquesina.
+5. Desenfoque gaussiano de 1,5 px y guardar en WebP con calidad 90.
+
+El script (`profundidad.py`) y la hoja de contactos para revisarlos están en el scratchpad de la sesión. Si se rehacen, **mira la hoja**: la marquesina y la escalinata tienen que salir más claras que la fachada.
 
 ## Mando de densidades (solo con `?revision`)
 
@@ -164,7 +205,7 @@ El mando no guarda nada en el navegador. La URL lleva `&densidad=sobria` para vo
   - convierte cada `<img data-foto="nombre">` en un `<picture>` con AVIF, WebP y JPG en todos los anchos de `img/fotos/fotos.json`;
   - mete en línea el HH de la cortina;
   - pone `?v=<huella>` a CSS y JS (con `versionar.mjs`).
-- **`node verificar.mjs --capturas`:** 108 comprobaciones, con capturas en `pruebas/`. GSAP y Lenis se sirven desde una copia local para que la cortina no dependa del CDN ese día. Comprueba:
+- **`node verificar.mjs --capturas`:** 120 comprobaciones, con capturas en `pruebas/`. GSAP y Lenis se sirven desde una copia local para que la cortina no dependa del CDN ese día. Comprueba:
   - la cortina: fotogramas a medias, el agujero sin fondo opaco y `display:none` en las tres pasadas;
   - los cordones, muestreando el `dashoffset` con la rueda;
   - el pin;
@@ -186,7 +227,8 @@ El mando no guarda nada en el navegador. La URL lleva `&densidad=sobria` para vo
     - el tirón del nudo;
     - los campos de 16 px o más;
   - el contraste;
-  - que existen los 132 archivos que enlaza `index.html`.
+  - el paquete B (la profundidad): que aparece después de la cortina sin ocultar nunca la foto LCP, que pinta solo bajo demanda y nunca fuera de pantalla, que el arrastre se conserva, el tope de DPR 2, la bajada de calidad con fotogramas de 25 ms, los respaldos (movimiento reducido, sin GSAP, sin WebGL, mapa 404 y contexto perdido), el chip de iOS con el permiso simulado, Android con el sensor emulado y el fundido de vistas. Con desplazamiento 0, el canvas casa con la foto;
+  - que existen los 133 archivos que enlaza `index.html`.
 - **Fotos:** son las de su propia web, con una gradación común (sutil) y en formatos responsive. La receta está en el scratchpad de la sesión.
   - No se usan las de banco de imágenes de su web (la pareja y el toro).
   - **Están casi todas a 800 px y las panorámicas a 1920×650. Ninguna se amplía por encima de su tamaño.** El portal del hero no pasa de 650 px de alto por eso.

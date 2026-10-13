@@ -415,19 +415,22 @@
     if (!ventana || !pista) return;
     const RATIO = 1920 / 650;           // las tres panorámicas tienen la misma proporción
     const FOCO = 0.3;                   // la puerta giratoria de la fachada
-    let x = 0, min = 0, vw = 0, arr = null, vel = 0, inercia = 0, ensenado = false;
+    let x = 0, min = 0, vw = 0, w = 0, arr = null, vel = 0, inercia = 0, ensenado = false;
+    // la capa de profundidad (profundidad.js) escucha cada pintado y cada cambio de vista
+    let oyente = null;
+    const avisar = () => { if (oyente) oyente(); };
 
     const medir = () => {
       const h = ventana.clientHeight;
       vw = ventana.clientWidth;
-      const w = h * RATIO;
+      w = h * RATIO;
       pista.style.width = f(w) + 'px';
       min = Math.min(0, vw - w);
       if (!pista._iniciada) { x = -(w * FOCO - vw / 2); pista._iniciada = true; }
       x = Math.max(min, Math.min(0, x));
       pintar();
     };
-    const pintar = () => { pista.style.transform = `translate3d(${f(x)}px,0,0)`; };
+    const pintar = () => { pista.style.transform = `translate3d(${f(x)}px,0,0)`; avisar(); };
     new ResizeObserver(medir).observe(ventana);
 
     // el primer arrastre (o las flechas) esconde la pista: ya sabe mirar, no hace falta enseñárselo
@@ -496,6 +499,7 @@
       vistas[actual].classList.remove('es-activa');
       actual = (actual + 1) % vistas.length;
       vistas[actual].classList.add('es-activa');
+      avisar();
       tocado();
     };
     function tocado() {
@@ -548,7 +552,7 @@
     }
     ensenarGesto = ensenar;
     if (heroEntrado) ensenar();
-    window.__portal = { siguiente, estado: () => ({ x, min, actual }) };
+    window.__portal = { siguiente, estado: () => ({ x, min, actual, w, vw }), escuchar: (fn) => { oyente = fn; } };
   })();
 
   /* ============ 7. formulario de reserva → motor de Paraty ============ */

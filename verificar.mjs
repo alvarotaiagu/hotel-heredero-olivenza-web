@@ -208,7 +208,7 @@ console.log('\n1. Escritorio · cortina y hero');
     'rótulos: «N.º 01 · Habitaciones» … «N.º 07 · Cómo llegar», seguidos', lam);
   const coord = await page.evaluate(() => { const c = document.querySelector('.hero__coord'); const r = c.getBoundingClientRect(); return { t: c.textContent, vis: r.height > 0 && getComputedStyle(c).visibility === 'visible' }; });
   comprobar(/38° 41′ 27″ N · 7° 05′ 38″ O/.test(coord.t) && coord.vis, 'hero: coordenadas del nodo de OSM del hotel (38° 41′ 27″ N · 7° 05′ 38″ O)', coord);
-  const grano = await page.evaluate(() => ({ body: getComputedStyle(document.body).backgroundImage, hero: getComputedStyle(document.querySelector('.hero')).backgroundImage, historia: getComputedStyle(document.querySelector('.historia')).backgroundImage, canvas: document.querySelectorAll('canvas').length }));
+  const grano = await page.evaluate(() => ({ body: getComputedStyle(document.body).backgroundImage, hero: getComputedStyle(document.querySelector('.hero')).backgroundImage, historia: getComputedStyle(document.querySelector('.historia')).backgroundImage, canvas: document.querySelectorAll('canvas:not(.portal__prof)').length }));
   comprobar(/feTurbulence/.test(grano.body) && /feTurbulence/.test(grano.hero) && grano.historia === 'none' && grano.canvas === 0, 'grano: sobre el papel y la cal, no sobre el azul', { historia: grano.historia, canvas: grano.canvas });
 
   /* paquete A · 3: el cordón con volumen (luz y sombra), como mucho 6 nodos */
@@ -681,6 +681,256 @@ console.log('\n11. El gesto se enseña solo');
   const priv = fs.readFileSync(path.join(RAIZ, 'privacidad.html'), 'utf8');
   comprobar(/se desliza/.test(txt) && /almacenamiento de sesión/.test(priv), 'gesto: el aviso de cookies y la privacidad dicen lo que se guarda');
   await ctx.close();
+}
+
+/* ================= 12. paquete B · la fachada con profundidad ================= */
+console.log('\n12. Profundidad del portal');
+{
+  const esperarProf = (page) => page.waitForFunction(() => window.__profundidad && window.__profundidad.estado().lista, null, { timeout: 15000 }).then(() => true, () => false);
+  const prof = (page) => page.evaluate(() => window.__profundidad ? window.__profundidad.estado() : null);
+  const hayLienzo = (page) => page.evaluate(() => !!document.querySelector('#portal-ventana .portal__prof'));
+  // la foto LCP (fachada) muestreada en cada fotograma desde el principio: nunca oculta
+  const vigilarFoto = () => {
+    window.__fotoOculta = [];
+    const mira = () => {
+      const img = document.querySelector('#portal-ventana [data-vista="0"] img');
+      if (img && img.complete) {
+        for (let el = img; el && el.id !== 'portal-ventana'; el = el.parentElement) {
+          const cs = getComputedStyle(el);
+          if (+cs.opacity === 0 || cs.visibility === 'hidden' || cs.display === 'none') { window.__fotoOculta.push(el.tagName + ' ' + (performance.now() | 0)); break; }
+        }
+      }
+      if (performance.now() < 9000) requestAnimationFrame(mira);
+    };
+    requestAnimationFrame(mira);
+    window.__lcp = [];
+    new PerformanceObserver((l) => l.getEntries().forEach((e) => window.__lcp.push(e.element ? e.element.tagName + '|' + (e.element.closest('#portal-ventana') ? 'portal' : '') : '?'))).observe({ type: 'largest-contentful-paint', buffered: true });
+  };
+  const fotoVisible = (page) => page.evaluate(() => { const i = document.querySelector('#portal-ventana [data-vista="0"] img'); const r = i.getBoundingClientRect(); return i.complete && i.naturalWidth > 0 && r.height > 0 && getComputedStyle(i.closest('.portal__vista')).opacity === '1'; });
+
+  // 12a · escritorio: aparece tras la cortina, la foto nunca se oculta, DPR ≤ 2
+  {
+    const { ctx, page } = await nueva();
+    await page.addInitScript(sinCookies);
+    await page.addInitScript(sinGesto);
+    await page.addInitScript(vigilarFoto);
+    await page.goto(BASE);
+    const lista = await esperarProf(page);
+    const r = await page.evaluate(() => ({ cortinaFuera: document.documentElement.classList.contains('cortina-fuera'), lcp: window.__lcp.slice(-1)[0] }));
+    comprobar(lista && r.cortinaFuera, 'profundidad: el canvas aparece (es-lista) después de la cortina', r);
+    comprobar(r.lcp === 'IMG|portal', 'profundidad: el LCP sigue siendo la foto de la fachada', r.lcp);
+    await page.waitForTimeout(1500);
+    const oculta = await page.evaluate(() => window.__fotoOculta);
+    comprobar(oculta.length === 0, 'profundidad: la foto LCP no se oculta en ningún fotograma (opacity/visibility/display)', oculta.slice(0, 5));
+    const e = await prof(page);
+    comprobar(e.vivo && e.nivel === 0 && e.ancho === 585 && e.alto === 650, 'profundidad: calidad alta y canvas a DPR 1 en escritorio (585×650)', e);
+
+    // 12b · pinta solo bajo demanda
+    await page.mouse.move(720, 450);
+    await page.waitForTimeout(1500);
+    const d0 = (await prof(page)).dibujos;
+    await page.waitForTimeout(1000);
+    const d1 = (await prof(page)).dibujos;
+    comprobar(d1 === d0, 'profundidad: en reposo no pinta (1 s sin dibujos nuevos)', { d0, d1 });
+    await page.mouse.move(1300, 200, { steps: 8 });
+    await page.waitForTimeout(400);
+    const d2 = (await prof(page)).dibujos;
+    comprobar(d2 > d1, 'profundidad: el ratón la hace pintar', { d1, d2 });
+    // el ratón en los dos lados: desplazamientos de signo contrario
+    await page.mouse.move(40, 450, { steps: 6 });
+    await page.waitForTimeout(1200);
+    const oIzq = (await prof(page)).o[0];
+    await page.mouse.move(1400, 450, { steps: 6 });
+    await page.waitForTimeout(1200);
+    const oDer = (await prof(page)).o[0];
+    comprobar(oIzq > 0.4 && oDer < -0.4, 'profundidad: el ratón a cada lado desplaza en sentidos opuestos', { oIzq, oDer });
+
+    // 12c · arrastre con el ratón: la física es la de siempre y lo cercano va por delante
+    await page.mouse.move(1100, 450);
+    await page.waitForTimeout(1200);
+    const reposo = (await prof(page)).o[0];
+    const x0 = await page.evaluate(() => window.__portal.estado().x);
+    await page.mouse.down();
+    let enMarcha = 0;
+    for (let i = 1; i <= 12; i++) { await page.mouse.move(1100 - i * 18, 452); await espera(16); if (i === 10) enMarcha = (await prof(page)).o[0]; }
+    await page.mouse.up();
+    await page.waitForTimeout(1800);
+    const x1 = await page.evaluate(() => window.__portal.estado().x);
+    comprobar(x1 < x0 - 150 && enMarcha < reposo - 0.15, 'profundidad: el arrastre mueve la pista como antes y la marquesina se adelanta al tirar', { x0, x1, reposo, enMarcha });
+
+    // 12h · cambio de vista: fundido de 1,4 s también en el canvas
+    await page.evaluate(() => window.__portal.siguiente());
+    await page.waitForTimeout(600);
+    const f1 = await prof(page);
+    await page.waitForTimeout(1400);
+    const f2 = await prof(page);
+    comprobar(f1.vistaB === 1 && f1.mezcla > 0 && f1.mezcla < 1 && f2.vistaA === 1 && f2.vistaB === -1, 'profundidad: la vista siguiente entra con un fundido', { f1: [f1.vistaA, f1.vistaB, f1.mezcla], f2: [f2.vistaA, f2.vistaB] });
+
+    // 12i · con desplazamiento 0 el canvas casa con la foto de debajo
+    await page.evaluate(() => window.__portal.siguiente());
+    await page.evaluate(() => window.__portal.siguiente());
+    await page.evaluate(() => window.__profundidad.fijar([0, 0]));
+    await page.waitForTimeout(2200);
+    const v = page.locator('#portal-ventana');
+    const conCanvas = (await v.screenshot()).toString('base64');
+    await page.evaluate(() => { document.querySelector('.portal__prof').style.visibility = 'hidden'; });
+    await page.waitForTimeout(100);
+    const sinCanvas = (await v.screenshot()).toString('base64');
+    await page.evaluate(() => { document.querySelector('.portal__prof').style.visibility = ''; });
+    const dif = await page.evaluate(async ([a, b]) => {
+      const px = async (s) => { const im = new Image(); im.src = 'data:image/png;base64,' + s; await im.decode(); const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const g = c.getContext('2d'); g.drawImage(im, 0, 0); return g.getImageData(0, 0, c.width, c.height).data; };
+      const [p, q] = [await px(a), await px(b)];
+      let t = 0; for (let i = 0; i < p.length; i += 4) t += Math.abs(p[i] - q[i]) + Math.abs(p[i + 1] - q[i + 1]) + Math.abs(p[i + 2] - q[i + 2]);
+      return t / (p.length / 4) / 3;
+    }, [conCanvas, sinCanvas]);
+    comprobar(dif < 6, 'profundidad: con desplazamiento 0 el canvas casa con la foto (diferencia media < 6/255)', +dif.toFixed(2));
+    if (CAPTURAS) for (const [n, o] of [['izq', [1, 1]], ['der', [-1, -1]]]) {
+      await page.evaluate((o) => window.__profundidad.fijar(o), o);
+      await page.waitForTimeout(1200);
+      await v.screenshot({ path: path.join(DIR_CAP, `20-profundidad-1440-${n}.png`) });
+    }
+
+    // fuera de pantalla no pinta, aunque se mueva el ratón
+    await page.evaluate(() => window.__profundidad.fijar(null));
+    await bajarA(page, '#habitaciones');
+    await page.waitForTimeout(800);
+    const g0 = (await prof(page)).dibujos;
+    await page.mouse.move(200, 300, { steps: 10 });
+    await page.mouse.move(1200, 600, { steps: 10 });
+    await page.waitForTimeout(500);
+    const g1 = (await prof(page)).dibujos;
+    comprobar(g1 === g0, 'profundidad: con el portal fuera de pantalla no pinta', { g0, g1 });
+    comprobar(page._errores.length === 0, 'profundidad: sin errores en la consola', page._errores);
+    await ctx.close();
+  }
+
+  // 12d · DPR 3 → el canvas se queda en 2
+  {
+    const { ctx, page } = await nueva({ deviceScaleFactor: 3 });
+    await page.addInitScript(sinCookies);
+    await page.goto(BASE);
+    await esperarProf(page);
+    const r = await page.evaluate(() => { const c = document.querySelector('.portal__prof'); return { w: c.width, cw: c.clientWidth, h: c.height, ch: c.clientHeight }; });
+    comprobar(r.w === Math.round(r.cw * 2) && r.h === Math.round(r.ch * 2), 'profundidad: con DPR 3 el canvas se queda a DPR 2', r);
+    await ctx.close();
+  }
+
+  // 12e · fotogramas lentos: baja la calidad y, si no llega, se retira
+  {
+    const { ctx, page } = await nueva();
+    await page.addInitScript(sinCookies);
+    await page.addInitScript(sinGesto);
+    await page.addInitScript(() => {
+      const raf = window.requestAnimationFrame.bind(window);
+      window.requestAnimationFrame = (cb) => raf((t) => { if (window.__lento) { const f = performance.now() + 25; while (performance.now() < f); } cb(t); });
+    });
+    await page.goto(BASE);
+    await esperarProf(page);
+    await page.evaluate(() => { window.__lento = true; window.__niveles = []; });
+    const niveles = new Set();
+    for (let i = 0; i < 40; i++) {
+      await page.mouse.move(i % 2 ? 1400 : 40, 450, { steps: 4 });
+      await page.waitForTimeout(150);
+      const e = await prof(page);
+      niveles.add(e.nivel);
+      if (!e.vivo) break;
+    }
+    await page.evaluate(() => { window.__lento = false; });
+    await page.waitForTimeout(900);
+    const e = await prof(page);
+    comprobar(niveles.has(1) && niveles.has(2) && !e.vivo && e.motivo === 'lento' && !(await hayLienzo(page)) && (await fotoVisible(page)),
+      'profundidad: a más de 20 ms por fotograma baja de calidad (alta → media → baja) y al final se retira; queda la foto', { niveles: [...niveles], motivo: e.motivo });
+    await ctx.close();
+  }
+
+  // 12f · respaldos: sin canvas y con la foto a la vista
+  // el 4.º campo es el motivo con el que profundidad.js tiene que retirarse: sin él la
+  // comprobación podría pasar antes de que el script llegue a arrancar (load + cortina + rato libre)
+  const respaldos = [
+    ['movimiento reducido', { reducedMotion: 'reduce' }, null, null],
+    ['sin GSAP (CDN caído)', {}, async (ctx) => ctx.route(/cdnjs\.cloudflare\.com\/ajax\/libs\/gsap/, (r) => r.abort()), null],
+    ['sin WebGL', {}, async (ctx, page) => page.addInitScript(() => { const g = HTMLCanvasElement.prototype.getContext; HTMLCanvasElement.prototype.getContext = function (t, ...a) { return /webgl/.test(t) ? null : g.call(this, t, ...a); }; }), 'sin-webgl'],
+    ['mapa de profundidad 404', {}, async (ctx) => ctx.route(/-prof\.webp/, (r) => r.fulfill({ status: 404, body: '' })), 'mapa'],
+  ];
+  for (const [nombre, op, prep, motivo] of respaldos) {
+    const { ctx, page } = await nueva(op);
+    await page.addInitScript(sinCookies);
+    if (prep) await prep(ctx, page);
+    await page.goto(BASE);
+    await esperarCortina(page, 3500);
+    if (motivo) await page.waitForFunction((m) => window.__profundidad && window.__profundidad.estado().motivo === m, motivo, { timeout: 15000 }).catch(() => {});
+    const e = await prof(page);
+    comprobar(!(await hayLienzo(page)) && (await fotoVisible(page)) && !(e && e.vivo) && (!motivo || (e && e.motivo === motivo)), `profundidad: ${nombre} → sin canvas, la foto a la vista`, e && e.motivo);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await nueva();
+    await page.addInitScript(sinCookies);
+    await page.goto(BASE);
+    await esperarProf(page);
+    await page.evaluate(() => document.querySelector('.portal__prof').getContext('webgl').getExtension('WEBGL_lose_context').loseContext());
+    await page.waitForTimeout(1000);
+    const e = await prof(page);
+    comprobar(!(await hayLienzo(page)) && (await fotoVisible(page)) && e.motivo === 'contexto', 'profundidad: si se pierde el contexto WebGL, se retira y queda la foto', e.motivo);
+    await ctx.close();
+  }
+
+  // 12g · móvil: el chip de iOS pide permiso; en Android no hay chip
+  {
+    const { ctx, page } = await nueva({ ...devices['Pixel 7'] });
+    await page.addInitScript(sinCookies);
+    await page.addInitScript(sinGesto);
+    await page.addInitScript(() => {
+      window.__permisos = 0;
+      DeviceOrientationEvent.requestPermission = () => { window.__permisos++; return Promise.resolve('granted'); };
+    });
+    await page.goto(BASE);
+    await esperarProf(page);
+    await page.waitForTimeout(1300);           // el chip sale si en 1 s no ha llegado ninguna lectura
+    const chip = await page.evaluate(() => { const b = document.getElementById('portal-inclinar'); const r = b.getBoundingClientRect(); return { visible: !b.hidden && r.height >= 44, alto: r.height }; });
+    comprobar(chip.visible, 'profundidad (iOS): el chip «Mover con el móvil» se ve (≥ 44 px)', chip);
+    await page.tap('#portal-inclinar');
+    await page.waitForTimeout(300);
+    const o0 = (await prof(page)).o[0];
+    const inclinar = (g, b) => page.evaluate(([g, b]) => window.dispatchEvent(new DeviceOrientationEvent('deviceorientation', { alpha: 0, beta: b, gamma: g })), [g, b]);
+    await inclinar(0, 40);
+    for (let i = 0; i < 6; i++) { await inclinar(14, 40); await page.waitForTimeout(100); }
+    await page.waitForTimeout(600);
+    const r = await page.evaluate(() => ({ permisos: window.__permisos, oculto: document.getElementById('portal-inclinar').hidden }));
+    const o1 = (await prof(page)).o[0];
+    comprobar(r.permisos === 1 && r.oculto && o1 < o0 - 0.4, 'profundidad (iOS): al tocar el chip se pide el permiso, se va y la inclinación mueve la vista', { ...r, o0, o1 });
+    if (CAPTURAS) await page.locator('#portal').screenshot({ path: path.join(DIR_CAP, '21-profundidad-390-inclinado.png') });
+
+    // arrastre táctil real: la pista se mueve como antes y el canvas la sigue
+    const cdp = await ctx.newCDPSession(page);
+    const caja = await page.evaluate(() => { const r = document.getElementById('portal-ventana').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
+    const x0 = await page.evaluate(() => window.__portal.estado().x);
+    const d0 = (await prof(page)).dibujos;
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: caja.x, y: caja.y }] });
+    for (let i = 1; i <= 10; i++) { await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: caja.x - i * 16, y: caja.y + i * 0.5 }] }); await espera(16); }
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await page.waitForTimeout(1500);
+    const x1 = await page.evaluate(() => window.__portal.estado().x);
+    const d1 = (await prof(page)).dibujos;
+    comprobar(x1 < x0 - 100 && d1 > d0 + 5, 'profundidad (móvil): el arrastre táctil mueve la pista y el canvas la sigue', { x0, x1, d0, d1 });
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await nueva({ ...devices['Pixel 7'] });
+    await page.addInitScript(sinCookies);
+    // un sensor de verdad (emulado): Android da lecturas sin pedir permiso
+    await ctx.grantPermissions(['accelerometer', 'gyroscope', 'magnetometer']);   // sin esto el sensor emulado no da lecturas
+    const cdp = await ctx.newCDPSession(page);
+    await cdp.send('DeviceOrientation.setDeviceOrientationOverride', { alpha: 0, beta: 40, gamma: 0 });
+    await page.goto(BASE);
+    await esperarProf(page);
+    await page.waitForTimeout(1300);
+    await cdp.send('DeviceOrientation.setDeviceOrientationOverride', { alpha: 0, beta: 40, gamma: 14 });
+    await page.waitForTimeout(1200);
+    const r = await page.evaluate(() => ({ chipOculto: document.getElementById('portal-inclinar').hidden, o: window.__profundidad.estado().o[0] }));
+    comprobar(r.chipOculto && r.o < -0.4, 'profundidad (Android): sin chip ni permiso, la inclinación mueve la vista', r);
+    await ctx.close();
+  }
 }
 
 /* ================= 8. recetas de borrado (sobre copias en memoria) ================= */
