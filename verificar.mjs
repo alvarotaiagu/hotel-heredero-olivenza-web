@@ -254,8 +254,10 @@ console.log('\n1. Escritorio · cortina y hero');
   await page.waitForTimeout(500);
   const cabAbajo = await page.evaluate(() => { const c = document.getElementById('cab'); return { azul: c.classList.contains('es-azul'), entero: +getComputedStyle(document.querySelector('.cab__logo')).opacity, compacto: +getComputedStyle(document.querySelector('.cab__compacto')).opacity, ancho: Math.round(document.querySelector('.cab__compacto').getBoundingClientRect().width) }; });
   await bajarA(page, '#historia', 0);
-  await page.waitForTimeout(500);
-  const cabAzul = await page.evaluate(() => { const c = document.getElementById('cab'), s = getComputedStyle(c); return { azul: c.classList.contains('es-azul'), fondo: s.backgroundColor, texto: s.color, logo: getComputedStyle(document.querySelector('.cab__compacto')).color }; });
+  // el cambio de clase va en el siguiente fotograma tras el scroll (y Lenis aún frena): esperar a que llegue
+  await page.waitForFunction(() => document.getElementById('cab').classList.contains('es-azul'), null, { timeout: 2000 }).catch(() => {});
+  await page.waitForTimeout(300);
+  const cabAzul = await page.evaluate(() => { const c = document.getElementById('cab'), s = getComputedStyle(c); const h = document.getElementById('historia').getBoundingClientRect(); return { azul: c.classList.contains('es-azul'), fondo: s.backgroundColor, texto: s.color, logo: getComputedStyle(document.querySelector('.cab__compacto')).color, top: Math.round(h.top), bottom: Math.round(h.bottom), sy: Math.round(scrollY) }; });
   await cap(page, '13-cabecera-azul-1440', { clip: { x: 0, y: 0, width: 1440, height: 160 } });
   comprobar(cabArriba.entero === 1 && cabArriba.compacto === 0 && !cabAbajo.azul && cabAbajo.entero === 0 && cabAbajo.compacto === 1 && cabAbajo.ancho <= 36
     && cabAzul.azul && /rgba?\(19, 38, 56/.test(cabAzul.fondo) && cabAzul.texto === 'rgb(245, 235, 211)' && cabAzul.logo === 'rgb(245, 235, 211)',
